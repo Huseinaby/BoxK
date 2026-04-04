@@ -139,7 +139,7 @@ $categories = getCategory();
                             <?php foreach ($categories as $category): ?>
                                 <tr>
                                     <td><?= $no++ ?></td>
-                                    <td><?= htmlspecialchars($category['nama']) ?></td>
+                                    <td><?= htmlspecialchars($category['name']) ?></td>
                                     <td>
                                         <button class="btn btn-danger btn-sm"
                                             onclick="deleteCategory(<?= $category['id'] ?>)">Hapus</button>
@@ -168,8 +168,8 @@ $categories = getCategory();
                 <div class="modal-body">
                     <form id="categoryForm">
                         <div class="mb-3">
-                            <label for="nama" class="form-label">Nama Kategori</label>
-                            <input type="text" class="form-control" id="nama" placeholder="Masukkan nama kategori"
+                            <label for="name" class="form-label">Nama Kategori</label>
+                            <input type="text" class="form-control" id="name" placeholder="Masukkan nama kategori"
                                 autocomplete="off">
                         </div>
                         <button type="submit" class="btn"
@@ -188,14 +188,14 @@ $categories = getCategory();
             $("#categoryForm").submit(function (e) {
                 e.preventDefault();
 
-                var nama = $("#nama").val();
+                var name = $("#name").val();
 
                 $.ajax({
                     url: '../functions.php',
                     type: 'POST',
                     data: {
                         action: 'newCategory',
-                        nama: nama,
+                        name: name,
                     },
                     success: function (response) {
                         var data = JSON.parse(response);
