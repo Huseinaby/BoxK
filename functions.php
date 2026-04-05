@@ -270,7 +270,9 @@ function getProduct()
 {
     global $conn;
 
-    $query = "SELECT * FROM product";
+    $query = "SELECT product.*, category.name AS category
+              FROM product
+              LEFT JOIN category ON product.category_id = category.id";
     $result = mysqli_query($conn, $query);
 
     return $result;
@@ -280,7 +282,10 @@ function getProductLimit()
 {
     global $conn;
 
-    $query = "SELECT * FROM product LIMIT 12";
+    $query = "SELECT product.*, category.name AS category
+              FROM product
+              LEFT JOIN category ON product.category_id = category.id
+              LIMIT 12";
     $result = mysqli_query($conn, $query);
 
     return $result;

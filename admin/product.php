@@ -175,7 +175,7 @@ $products = getProduct();
                                     </p>
                                     <p><strong>Warna:</strong> <?= htmlspecialchars($product['color']) ?></p>
                                     <p><strong>Ukuran:</strong> <?= htmlspecialchars($product['size']) ?></p>
-                                    <p><strong>Kategori:</strong> <?= (int) $product['category_id'] ?></p>
+                                    <p><strong>Kategori:</strong> <?= htmlspecialchars($product['category'] ?? '-') ?></p>
                                     <p><strong>Harga:</strong> Rp <?= number_format($product['price'], 0, ',', '.') ?></p>
                                     <p><strong>Status:</strong>
                                         <span
@@ -248,8 +248,8 @@ $products = getProduct();
                                             <select name="editCategory" id="editCategory<?= $product['id'] ?>"
                                                 class="form-control editCategory">
                                                 <?php foreach ($categories as $category): ?>
-                                                    <option value="<?= htmlspecialchars($category['name']) ?>"
-                                                        <?= $product['category'] == $category['name'] ? 'selected' : '' ?>>
+                                                    <option value="<?= (int) $category['id'] ?>"
+                                                        <?= (int) $product['category_id'] === (int) $category['id'] ? 'selected' : '' ?>>
                                                         <?= htmlspecialchars($category['name']) ?>
                                                     </option>
                                                 <?php endforeach; ?>
