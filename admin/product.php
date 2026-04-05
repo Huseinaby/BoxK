@@ -95,13 +95,15 @@ $products = getProduct();
     <nav class="navbar navbar-expand-lg">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">BoxKado</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
                             <?= $user['username'] ?>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
@@ -120,24 +122,31 @@ $products = getProduct();
         </div>
         <div class="content container">
             <h2 class="mt-4">Produk</h2>
-            <button class="btn" style="background-color: #ff74a4; color: white; margin-bottom: 15px;" data-bs-toggle="modal" data-bs-target="#addProductModal">
+            <button class="btn" style="background-color: #ff74a4; color: white; margin-bottom: 15px;"
+                data-bs-toggle="modal" data-bs-target="#addProductModal">
                 Tambah Produk
             </button>
             <div class="d-flex justify-content-between mb-3">
                 <select id="categoryFilter" class="form-control" style="width: 200px;">
                     <option value="all">Semua Kategori</option>
                     <?php foreach ($categories as $category): ?>
-                        <option value="<?= htmlspecialchars($category['name']) ?>"><?= htmlspecialchars($category['name']) ?></option>
+                        <option value="<?= htmlspecialchars($category['name']) ?>">
+                            <?= htmlspecialchars($category['name']) ?>
+                        </option>
                     <?php endforeach; ?>
                 </select>
 
-                <input type="text" id="searchInput" class="form-control" style="width: 300px;" placeholder="Cari produk...">
+                <input type="text" id="searchInput" class="form-control" style="width: 300px;"
+                    placeholder="Cari produk...">
             </div>
             <div class="row" id="productContainer">
                 <?php foreach ($products as $product): ?>
-                    <div class="col-md-3 mb-3 product-card" data-category="<?= htmlspecialchars($product['category']) ?>" data-name="<?= strtolower(htmlspecialchars($product['name'])) ?>">
-                        <div class="card h-100" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#productModal<?= $product['id'] ?>">
-                            <img src="../assets/uploads/<?= htmlspecialchars($product['image']) ?>" class="card-img-top" alt="<?= htmlspecialchars($product['name']) ?>">
+                    <div class="col-md-3 mb-3 product-card" data-category="<?= htmlspecialchars($product['category']) ?>"
+                        data-name="<?= strtolower(htmlspecialchars($product['name'])) ?>">
+                        <div class="card h-100" style="cursor: pointer;" data-bs-toggle="modal"
+                            data-bs-target="#productModal<?= $product['id'] ?>">
+                            <img src="../assets/uploads/<?= htmlspecialchars($product['image']) ?>" class="card-img-top"
+                                alt="<?= htmlspecialchars($product['name']) ?>">
                             <div class="card-body">
                                 <h5 class="card-title"><?= htmlspecialchars($product['name']) ?></h5>
                                 <p class="card-text" style="color: #ff74a4; font-weight: bold;">
@@ -148,77 +157,99 @@ $products = getProduct();
                     </div>
 
                     <!-- Modal Detail Produk -->
-                    <div class="modal fade" id="productModal<?= $product['id'] ?>" tabindex="-1" aria-labelledby="productModalLabel<?= $product['id'] ?>" aria-hidden="true">
+                    <div class="modal fade" id="productModal<?= $product['id'] ?>" tabindex="-1"
+                        aria-labelledby="productModalLabel<?= $product['id'] ?>" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title" id="productModalLabel<?= $product['id'] ?>"><?= htmlspecialchars($product['name']) ?></h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    <h5 class="modal-title" id="productModalLabel<?= $product['id'] ?>">
+                                        <?= htmlspecialchars($product['name']) ?>
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
-                                    <img src="../assets/uploads/<?= htmlspecialchars($product['image']) ?>" class="img-fluid mb-3" alt="<?= htmlspecialchars($product['name']) ?>">
-                                    <p><strong>Tentang Produk:</strong> <?= nl2br(htmlspecialchars($product['about'])) ?></p>
+                                    <img src="../assets/uploads/<?= htmlspecialchars($product['image']) ?>"
+                                        class="img-fluid mb-3" alt="<?= htmlspecialchars($product['name']) ?>">
+                                    <p><strong>Tentang Produk:</strong> <?= nl2br(htmlspecialchars($product['about'])) ?>
+                                    </p>
                                     <p><strong>Warna:</strong> <?= htmlspecialchars($product['color']) ?></p>
                                     <p><strong>Ukuran:</strong> <?= htmlspecialchars($product['size']) ?></p>
                                     <p><strong>Kategori:</strong> <?= htmlspecialchars($product['category']) ?></p>
                                     <p><strong>Harga:</strong> Rp <?= number_format($product['price'], 0, ',', '.') ?></p>
                                     <p><strong>Status:</strong>
-                                        <span class="badge bg-<?= $product['status'] === 'tersedia' ? 'success' : 'danger' ?>">
+                                        <span
+                                            class="badge bg-<?= $product['status'] === 'tersedia' ? 'success' : 'danger' ?>">
                                             <?= ucfirst($product['status']) ?>
                                         </span>
                                     </p>
                                 </div>
                                 <div class="modal-footer">
-                                    <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editProductModal<?= $product['id'] ?>">
+                                    <button class="btn btn-warning" data-bs-toggle="modal"
+                                        data-bs-target="#editProductModal<?= $product['id'] ?>">
                                         Edit Produk
                                     </button>
-                                    <button class="btn btn-danger" onclick="deleteProduct(<?php echo $product['id']; ?>)">Hapus Produk</button>
+                                    <button class="btn btn-danger"
+                                        onclick="deleteProduct(<?php echo $product['id']; ?>)">Hapus Produk</button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Modal Edit Produk -->
-                    <div class="modal fade" id="editProductModal<?= $product['id'] ?>" tabindex="-1" aria-labelledby="editProductModalLabel<?= $product['id'] ?>" aria-hidden="true">
+                    <div class="modal fade" id="editProductModal<?= $product['id'] ?>" tabindex="-1"
+                        aria-labelledby="editProductModalLabel<?= $product['id'] ?>" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h5 class="modal-title">Edit Produk: <?= htmlspecialchars($product['name']) ?></h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
                                     <form id="editProductForm<?php echo $product['id']; ?>" data-id="<?= $product['id'] ?>">
                                         <input type="hidden" name="editProductId" value="<?= $product['id'] ?>">
                                         <div class="mb-3">
                                             <label class="form-label">Nama Produk</label>
-                                            <input type="text" name="editName" id="editName<?= $product['id'] ?>" class="form-control editName" value="<?= htmlspecialchars($product['name']) ?>" required>
+                                            <input type="text" name="editName" id="editName<?= $product['id'] ?>"
+                                                class="form-control editName"
+                                                value="<?= htmlspecialchars($product['name']) ?>" required>
                                         </div>
 
                                         <div class="mb-3">
                                             <label class="form-label">Tentang Produk</label>
-                                            <input type="text" name="editAbout" id="editAbout<?= $product['id'] ?>" class="form-control editAbout" value="<?= htmlspecialchars($product['about']) ?>" required>
+                                            <input type="text" name="editAbout" id="editAbout<?= $product['id'] ?>"
+                                                class="form-control editAbout"
+                                                value="<?= htmlspecialchars($product['about']) ?>" required>
                                         </div>
 
                                         <div class="mb-3">
                                             <label class="form-label">Harga</label>
-                                            <input type="number" name="editPrice" id="editPrice<?= $product['id'] ?>" class="form-control editPrice" value="<?= $product['price'] ?>" required>
+                                            <input type="number" name="editPrice" id="editPrice<?= $product['id'] ?>"
+                                                class="form-control editPrice" value="<?= $product['price'] ?>" required>
                                         </div>
 
                                         <div class="mb-3">
                                             <label class="form-label">Warna</label>
-                                            <input type="text" name="editColor" id="editColor<?= $product['id'] ?>" class="form-control editColor" value="<?= htmlspecialchars($product['color']) ?>">
+                                            <input type="text" name="editColor" id="editColor<?= $product['id'] ?>"
+                                                class="form-control editColor"
+                                                value="<?= htmlspecialchars($product['color']) ?>">
                                         </div>
 
                                         <div class="mb-3">
                                             <label class="form-label">Ukuran</label>
-                                            <input type="text" name="editSize" id="editSize<?= $product['id'] ?>" class="form-control editSize" value="<?= htmlspecialchars($product['size']) ?>">
+                                            <input type="text" name="editSize" id="editSize<?= $product['id'] ?>"
+                                                class="form-control editSize"
+                                                value="<?= htmlspecialchars($product['size']) ?>">
                                         </div>
 
                                         <div class="mb-3">
                                             <label class="form-label">Kategori</label>
-                                            <select name="editCategory" id="editCategory<?= $product['id'] ?>" class="form-control editCategory">
+                                            <select name="editCategory" id="editCategory<?= $product['id'] ?>"
+                                                class="form-control editCategory">
                                                 <?php foreach ($categories as $category): ?>
-                                                    <option value="<?= htmlspecialchars($category['name']) ?>" <?= $product['category'] == $category['name'] ? 'selected' : '' ?>>
+                                                    <option value="<?= htmlspecialchars($category['name']) ?>"
+                                                        <?= $product['category'] == $category['name'] ? 'selected' : '' ?>>
                                                         <?= htmlspecialchars($category['name']) ?>
                                                     </option>
                                                 <?php endforeach; ?>
@@ -227,7 +258,8 @@ $products = getProduct();
 
                                         <div class="mb-3">
                                             <label class="form-label">Status</label>
-                                            <select name="editStatus" id="editStatus<?= $product['id'] ?>" class="form-control editStatus">
+                                            <select name="editStatus" id="editStatus<?= $product['id'] ?>"
+                                                class="form-control editStatus">
                                                 <option value="tersedia" <?= $product['status'] == 'tersedia' ? 'selected' : '' ?>>Tersedia</option>
                                                 <option value="tidaktersedia" <?= $product['status'] == 'tidaktersedia' ? 'selected' : '' ?>>Tidak Tersedia</option>
                                             </select>
@@ -235,13 +267,16 @@ $products = getProduct();
 
                                         <div class="mb-3">
                                             <label class="form-label">Gambar Produk</label>
-                                            <input type="file" name="editImage" id="editImage<?= $product['id'] ?>" class="form-control editImage">
+                                            <input type="file" name="editImage" id="editImage<?= $product['id'] ?>"
+                                                class="form-control editImage">
                                             <small>* Biarkan kosong jika tidak ingin mengubah gambar.</small>
                                         </div>
 
                                         <div class="modal-footer">
-                                            <button type="submit" class="btn btn-primary" style="background-color: #ff74a4; color: white;">Simpan Perubahan</button>
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                            <button type="submit" class="btn btn-primary"
+                                                style="background-color: #ff74a4; color: white;">Simpan Perubahan</button>
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Batal</button>
                                         </div>
                                     </form>
                                 </div>
@@ -255,7 +290,8 @@ $products = getProduct();
 
     </div>
 
-    <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+    <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -266,26 +302,30 @@ $products = getProduct();
                     <form id="addProductForm">
                         <div class="mb-3">
                             <label for="productName" class="form-label">Nama Produk</label>
-                            <input type="text" class="form-control" id="productName" name="productName" placeholder="Masukkan nama produk" autocomplete="off">
+                            <input type="text" class="form-control" id="productName" name="productName"
+                                placeholder="Masukkan nama produk" autocomplete="off">
                         </div>
                         <div class="mb-3">
                             <label for="productAbout" class="form-label">Tentang Produk</label>
-                            <textarea class="form-control" id="productAbout" name="productAbout" placeholder="Deskripsi produk"></textarea>
+                            <textarea class="form-control" id="productAbout" name="productAbout"
+                                placeholder="Deskripsi produk"></textarea>
                         </div>
                         <div class="mb-3">
                             <label for="productColor" class="form-label">Warna</label>
-                            <input type="text" class="form-control" id="productColor" name="productColor" placeholder="Masukkan warna produk">
+                            <input type="text" class="form-control" id="productColor" name="productColor"
+                                placeholder="Masukkan warna produk">
                         </div>
                         <div class="mb-3">
                             <label for="productSize" class="form-label">Ukuran</label>
-                            <input type="text" class="form-control" id="productSize" name="productSize" placeholder="Masukkan ukuran produk">
+                            <input type="text" class="form-control" id="productSize" name="productSize"
+                                placeholder="Masukkan ukuran produk">
                         </div>
                         <div class="mb-3">
                             <label for="productCategory" class="form-label">Kategori</label>
                             <select class="form-control" id="productCategory" name="productCategory">
                                 <option value="">Pilih Kategori</option>
                                 <?php foreach ($categories as $category): ?>
-                                    <option value="<?= htmlspecialchars($category['name']) ?>">
+                                    <option value="<?= $category['id'] ?>">
                                         <?= htmlspecialchars($category['name']) ?>
                                     </option>
                                 <?php endforeach; ?>
@@ -293,7 +333,8 @@ $products = getProduct();
                         </div>
                         <div class="mb-3">
                             <label for="productPrice" class="form-label">Harga</label>
-                            <input type="number" class="form-control" id="productPrice" name="productPrice" placeholder="Masukkan harga">
+                            <input type="number" class="form-control" id="productPrice" name="productPrice"
+                                placeholder="Masukkan harga">
                         </div>
                         <div class="mb-3">
                             <label for="productStatus" class="form-label">Status</label>
@@ -306,7 +347,8 @@ $products = getProduct();
                             <label for="productImage" class="form-label">Gambar Produk</label>
                             <input type="file" class="form-control" id="productImage" name="productImage">
                         </div>
-                        <button type="submit" class="btn" style="background-color: #ff74a4; color: white;">Simpan</button>
+                        <button type="submit" class="btn"
+                            style="background-color: #ff74a4; color: white;">Simpan</button>
                     </form>
                 </div>
             </div>
@@ -317,8 +359,8 @@ $products = getProduct();
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        $(document).ready(function() {
-            $("#addProductForm").submit(function(e) {
+        $(document).ready(function () {
+            $("#addProductForm").submit(function (e) {
                 e.preventDefault();
 
                 var productName = $('#productName').val();
@@ -357,7 +399,7 @@ $products = getProduct();
                     data: formData,
                     contentType: false,
                     processData: false,
-                    success: function(response) {
+                    success: function (response) {
                         var data = JSON.parse(response);
                         if (data.success) {
                             Swal.fire({
@@ -365,7 +407,7 @@ $products = getProduct();
                                 title: 'Berhasil',
                                 text: data.message,
                                 confirmButtonColor: '#ff94c4'
-                            }).then(function() {
+                            }).then(function () {
                                 location.reload();
                             });
                         } else {
@@ -377,7 +419,7 @@ $products = getProduct();
                             });
                         }
                     },
-                    error: function(xhr, status, error) {
+                    error: function (xhr, status, error) {
                         console.log('Error:', error);
                         Swal.fire({
                             icon: 'error',
@@ -390,7 +432,7 @@ $products = getProduct();
             });
 
             <?php foreach ($products as $product): ?>
-                $("#editProductForm<?php echo $product['id']; ?>").submit(function(e) {
+                $("#editProductForm<?php echo $product['id']; ?>").submit(function (e) {
                     e.preventDefault();
 
                     var productId = '<?php echo $product['id']; ?>';
@@ -435,14 +477,14 @@ $products = getProduct();
                         data: formData,
                         contentType: false,
                         processData: false,
-                        success: function(response) {
+                        success: function (response) {
                             var data = JSON.parse(response);
                             if (data.success) {
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'Success',
                                     text: data.message
-                                }).then(function() {
+                                }).then(function () {
                                     $('#editProductModal<?php echo $product['id']; ?>').modal('hide');
                                     location.reload();
                                 });
@@ -454,7 +496,7 @@ $products = getProduct();
                                 });
                             }
                         },
-                        error: function(xhr, status, error) {
+                        error: function (xhr, status, error) {
                             console.log('Error:', error);
                             Swal.fire({
                                 icon: 'error',
@@ -475,7 +517,7 @@ $products = getProduct();
             var searchText = document.getElementById('searchInput').value.toLowerCase();
             var products = document.querySelectorAll('.product-card');
 
-            products.forEach(function(product) {
+            products.forEach(function (product) {
                 var productCategory = product.getAttribute('data-category').toLowerCase();
                 var productName = product.getAttribute('data-name');
 
@@ -509,7 +551,7 @@ $products = getProduct();
                             action: 'deleteproduct',
                             id: productId
                         },
-                        success: function(response) {
+                        success: function (response) {
                             var data = JSON.parse(response);
                             if (data.success) {
                                 Swal.fire({
@@ -517,7 +559,7 @@ $products = getProduct();
                                     title: 'Produk Dihapus',
                                     text: data.message,
                                     confirmButtonColor: '#ff94c4'
-                                }).then(function() {
+                                }).then(function () {
                                     location.reload();
                                 });
                             } else {
@@ -529,7 +571,7 @@ $products = getProduct();
                                 });
                             }
                         },
-                        error: function(xhr, status, error) {
+                        error: function (xhr, status, error) {
                             console.log('Error:', error);
                             Swal.fire({
                                 icon: 'error',

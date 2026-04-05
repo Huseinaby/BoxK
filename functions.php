@@ -200,14 +200,25 @@ function addProduct()
     $productAbout = mysqli_real_escape_string($conn, $_POST['productAbout']);
     $productColor = mysqli_real_escape_string($conn, $_POST['productColor']);
     $productSize = mysqli_real_escape_string($conn, $_POST['productSize']);
-    $productCategory = mysqli_real_escape_string($conn, $_POST['productCategory']);
+    $productCategoryId = (int) $_POST['productCategory'];
     $productPrice = mysqli_real_escape_string($conn, $_POST['productPrice']);
     $productStatus = mysqli_real_escape_string($conn, $_POST['productStatus']);
     $productImage = $_FILES['productImage'];
 
+    $validateCategory = "SELECT  * FROM category WHERE id = $productCategoryId";
+    $resultCategory = mysqli_query($conn, $validateCategory);
+
+    if (mysqli_num_rows($resultCategory) == 0) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Kategori tidak valid.'
+        ]);
+        exit;
+    }
+
     if (
         empty($productName) || empty($productAbout) || empty($productColor) ||
-        empty($productSize) || empty($productCategory) || empty($productPrice) ||
+        empty($productSize) || empty($productCategoryId) || empty($productPrice) ||
         empty($productStatus) || empty($productImage['name'])
     ) {
         echo json_encode([
@@ -233,8 +244,8 @@ function addProduct()
     $imagePath = "assets/uploads/" . $imageName;
 
     if (move_uploaded_file($imageTmpName, $imagePath)) {
-        $query = "INSERT INTO product (name, about, color, size, category, price, status, image) 
-                  VALUES ('$productName', '$productAbout', '$productColor', '$productSize', '$productCategory', '$productPrice', '$productStatus', '$imageName')";
+        $query = "INSERT INTO product (name, about, color, size, category_id, price, status, image) 
+                  VALUES ('$productName', '$productAbout', '$productColor', '$productSize', $productCategoryId, '$productPrice', '$productStatus', '$imageName')";
 
         if (mysqli_query($conn, $query)) {
             echo json_encode([
@@ -323,7 +334,7 @@ function editProduct($id, $name, $desc, $price, $color, $size, $category, $statu
                   price = '$price', 
                   color = '$color', 
                   size = '$size', 
-                  category = '$category', 
+                  category_id = $category, 
                   status = '$status'
                   $imageQuery 
               WHERE id = '$id'";
