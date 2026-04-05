@@ -130,7 +130,7 @@ $products = getProduct();
                 <select id="categoryFilter" class="form-control" style="width: 200px;">
                     <option value="all">Semua Kategori</option>
                     <?php foreach ($categories as $category): ?>
-                        <option value="<?= htmlspecialchars($category['name']) ?>">
+                        <option value="<?= (int) $category['id'] ?>">
                             <?= htmlspecialchars($category['name']) ?>
                         </option>
                     <?php endforeach; ?>
@@ -141,7 +141,7 @@ $products = getProduct();
             </div>
             <div class="row" id="productContainer">
                 <?php foreach ($products as $product): ?>
-                    <div class="col-md-3 mb-3 product-card" data-category="<?= htmlspecialchars($product['category']) ?>"
+                    <div class="col-md-3 mb-3 product-card" data-category="<?= (int) $product['category_id'] ?>"
                         data-name="<?= strtolower(htmlspecialchars($product['name'])) ?>">
                         <div class="card h-100" style="cursor: pointer;" data-bs-toggle="modal"
                             data-bs-target="#productModal<?= $product['id'] ?>">
@@ -175,7 +175,7 @@ $products = getProduct();
                                     </p>
                                     <p><strong>Warna:</strong> <?= htmlspecialchars($product['color']) ?></p>
                                     <p><strong>Ukuran:</strong> <?= htmlspecialchars($product['size']) ?></p>
-                                    <p><strong>Kategori:</strong> <?= htmlspecialchars($product['category']) ?></p>
+                                    <p><strong>Kategori:</strong> <?= (int) $product['category_id'] ?></p>
                                     <p><strong>Harga:</strong> Rp <?= number_format($product['price'], 0, ',', '.') ?></p>
                                     <p><strong>Status:</strong>
                                         <span
@@ -325,7 +325,7 @@ $products = getProduct();
                             <select class="form-control" id="productCategory" name="productCategory">
                                 <option value="">Pilih Kategori</option>
                                 <?php foreach ($categories as $category): ?>
-                                    <option value="<?= $category['id'] ?>">
+                                    <option value="<?= (int) $category['id'] ?>">
                                         <?= htmlspecialchars($category['name']) ?>
                                     </option>
                                 <?php endforeach; ?>
