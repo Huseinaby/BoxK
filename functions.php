@@ -353,7 +353,7 @@ function deleteProduct($id)
 
     if ($row) {
         $image = $row['image'];
-        $imagePath = '../assets/uploads/' . $image;
+        $imagePath = 'assets/uploads/' . $image;
 
         $query = "DELETE FROM product WHERE id = $id";
         $result = mysqli_query($conn, $query);
