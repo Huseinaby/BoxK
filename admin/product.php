@@ -3,14 +3,12 @@ session_start();
 
 require '../functions.php';
 
-if (!isset($_SESSION['user'])) {
-    header('Location: index.php');
-    exit;
-}
+requireAdminAccess();
 
 $user = $_SESSION['user'];
 $categories = getCategory();
 $products = getProduct();
+$csrfToken = csrfToken();
 ?>
 
 <!DOCTYPE html>
@@ -104,7 +102,7 @@ $products = getProduct();
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
-                            <?= $user['username'] ?>
+                            <?= htmlspecialchars($user['username'], ENT_QUOTES, 'UTF-8') ?>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                             <li><a class="dropdown-item" href="logout.php">Logout</a></li>
@@ -261,7 +259,7 @@ $products = getProduct();
                                             <select name="editStatus" id="editStatus<?= $product['id'] ?>"
                                                 class="form-control editStatus">
                                                 <option value="tersedia" <?= $product['status'] == 'tersedia' ? 'selected' : '' ?>>Tersedia</option>
-                                                <option value="tidaktersedia" <?= $product['status'] == 'tidaktersedia' ? 'selected' : '' ?>>Tidak Tersedia</option>
+                                                <option value="habis" <?= $product['status'] == 'habis' ? 'selected' : '' ?>>Habis</option>
                                             </select>
                                         </div>
 
@@ -340,7 +338,7 @@ $products = getProduct();
                             <label for="productStatus" class="form-label">Status</label>
                             <select class="form-control" id="productStatus" name="productStatus">
                                 <option value="tersedia">Tersedia</option>
-                                <option value="tidaktersedia">Tidak Tersedia</option>
+                                <option value="habis">Habis</option>
                             </select>
                         </div>
                         <div class="mb-3">
@@ -359,6 +357,72 @@ $products = getProduct();
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        var csrfToken = <?= json_encode($csrfToken) ?>;
+
+        function parseJsonResponse(response) {
+            try {
+                return JSON.parse(response);
+            } catch (error) {
+                return null;
+            }
+        }
+
+        function showSuccessAndReload(title, message) {
+            Swal.fire({
+                icon: 'success',
+                title: title,
+                text: message,
+                confirmButtonColor: '#ff94c4'
+            }).then(function () {
+                location.reload();
+            });
+        }
+
+        function showError(message, title) {
+            Swal.fire({
+                icon: 'error',
+                title: title || 'Oops...',
+                text: message,
+                confirmButtonColor: '#ff94c4'
+            });
+        }
+
+        function closeModal(modalId) {
+            var modalElement = document.getElementById(modalId);
+            if (!modalElement) {
+                return;
+            }
+
+            var modalInstance = bootstrap.Modal.getInstance(modalElement);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+        }
+
+        function buildEditProductFormData(formElement) {
+            var $form = $(formElement);
+            var fileInput = $form.find('.editImage')[0];
+            var fileToUpload = fileInput && fileInput.files.length > 0 ? fileInput.files[0] : null;
+
+            var formData = new FormData();
+            formData.append('action', 'editproduct');
+            formData.append('id', $form.data('id'));
+            formData.append('productName', $form.find('.editName').val());
+            formData.append('productDesc', $form.find('.editAbout').val());
+            formData.append('productPrice', $form.find('.editPrice').val());
+            formData.append('productColor', $form.find('.editColor').val());
+            formData.append('productSize', $form.find('.editSize').val());
+            formData.append('productCategory', $form.find('.editCategory').val());
+            formData.append('productStatus', $form.find('.editStatus').val());
+            formData.append('csrf_token', csrfToken);
+
+            if (fileToUpload) {
+                formData.append('productImage', fileToUpload);
+            }
+
+            return formData;
+        }
+
         $(document).ready(function () {
             $("#addProductForm").submit(function (e) {
                 e.preventDefault();
@@ -392,6 +456,7 @@ $products = getProduct();
                 formData.append('productPrice', productPrice);
                 formData.append('productStatus', productStatus);
                 formData.append('productImage', productImage);
+                formData.append('csrf_token', csrfToken);
 
                 $.ajax({
                     url: '../functions.php',
@@ -400,113 +465,76 @@ $products = getProduct();
                     contentType: false,
                     processData: false,
                     success: function (response) {
-                        var data = JSON.parse(response);
+                        var data = parseJsonResponse(response);
+
+                        if (!data) {
+                            showError('Format respons tidak valid.');
+                            return;
+                        }
+
                         if (data.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil',
-                                text: data.message,
-                                confirmButtonColor: '#ff94c4'
-                            }).then(function () {
-                                location.reload();
-                            });
+                            showSuccessAndReload('Berhasil', data.message);
                         } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Gagal',
-                                text: data.message,
-                                confirmButtonColor: '#ff94c4'
-                            });
+                            showError(data.message, 'Gagal');
                         }
                     },
                     error: function (xhr, status, error) {
                         console.log('Error:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Oops...',
-                            text: 'Terjadi kesalahan, silakan coba lagi.',
-                            confirmButtonColor: '#ff94c4'
-                        });
+                        showError('Terjadi kesalahan, silakan coba lagi.');
                     }
                 });
             });
 
-            <?php foreach ($products as $product): ?>
-                $("#editProductForm<?php echo $product['id']; ?>").submit(function (e) {
-                    e.preventDefault();
+            $(document).on('submit', "form[id^='editProductForm']", function (e) {
+                e.preventDefault();
 
-                    var productId = '<?php echo $product['id']; ?>';
-                    var productName = $('#editName<?php echo $product['id']; ?>').val();
-                    var productDesc = $('#editAbout<?php echo $product['id']; ?>').val();
-                    var productPrice = $('#editPrice<?php echo $product['id']; ?>').val();
-                    var productColor = $('#editColor<?php echo $product['id']; ?>').val();
-                    var productSize = $('#editSize<?php echo $product['id']; ?>').val();
-                    var productCategory = $('#editCategory<?php echo $product['id']; ?>').val();
-                    var productStatus = $('#editStatus<?php echo $product['id']; ?>').val();
-                    var productImage = $('#editImage<?php echo $product['id']; ?>')[0];
+                var productName = $(this).find('.editName').val();
+                var productDesc = $(this).find('.editAbout').val();
+                var productPrice = $(this).find('.editPrice').val();
+                var productCategory = $(this).find('.editCategory').val();
+                var productStatus = $(this).find('.editStatus').val();
 
-                    var fileToUpload = productImage && productImage.files.length > 0 ? productImage.files[0] : null;
+                if (!productName || !productDesc || !productPrice || !productCategory || !productStatus) {
+                    showError('All fields are required!');
+                    return;
+                }
 
-                    if (!productName || !productDesc || !productPrice || !productCategory || !productStatus) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Oops...',
-                            text: 'All fields are required!'
-                        });
-                        return;
-                    }
+                var formData = buildEditProductFormData(this);
+                var modalId = 'editProductModal' + $(this).data('id');
 
-                    var formData = new FormData();
-                    formData.append('action', 'editproduct');
-                    formData.append('id', productId);
-                    formData.append('productName', productName);
-                    formData.append('productDesc', productDesc);
-                    formData.append('productPrice', productPrice);
-                    formData.append('productColor', productColor);
-                    formData.append('productSize', productSize);
-                    formData.append('productCategory', productCategory);
-                    formData.append('productStatus', productStatus);
+                $.ajax({
+                    url: '../functions.php',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        var data = parseJsonResponse(response);
 
-                    if (fileToUpload) {
-                        formData.append('productImage', fileToUpload);
-                    }
-
-                    $.ajax({
-                        url: '../functions.php',
-                        type: 'POST',
-                        data: formData,
-                        contentType: false,
-                        processData: false,
-                        success: function (response) {
-                            var data = JSON.parse(response);
-                            if (data.success) {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Success',
-                                    text: data.message
-                                }).then(function () {
-                                    $('#editProductModal<?php echo $product['id']; ?>').modal('hide');
-                                    location.reload();
-                                });
-                            } else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Error',
-                                    text: data.message
-                                });
-                            }
-                        },
-                        error: function (xhr, status, error) {
-                            console.log('Error:', error);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Oops...',
-                                text: 'An error occurred. Please try again.'
-                            });
+                        if (!data) {
+                            showError('Format respons tidak valid.');
+                            return;
                         }
-                    });
+
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: data.message
+                            }).then(function () {
+                                closeModal(modalId);
+                                location.reload();
+                            });
+                        } else {
+                            showError(data.message, 'Error');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.log('Error:', error);
+                        showError('An error occurred. Please try again.');
+                    }
                 });
-            <?php endforeach; ?>
+            });
         });
 
         document.getElementById('categoryFilter').addEventListener('change', filterProducts);
@@ -549,36 +577,26 @@ $products = getProduct();
                         type: 'POST',
                         data: {
                             action: 'deleteproduct',
-                            id: productId
+                            id: productId,
+                            csrf_token: csrfToken
                         },
                         success: function (response) {
-                            var data = JSON.parse(response);
+                            var data = parseJsonResponse(response);
+
+                            if (!data) {
+                                showError('Format respons tidak valid.');
+                                return;
+                            }
+
                             if (data.success) {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Produk Dihapus',
-                                    text: data.message,
-                                    confirmButtonColor: '#ff94c4'
-                                }).then(function () {
-                                    location.reload();
-                                });
+                                showSuccessAndReload('Produk Dihapus', data.message);
                             } else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Error',
-                                    text: data.message,
-                                    confirmButtonColor: '#ff94c4'
-                                });
+                                showError(data.message, 'Error');
                             }
                         },
                         error: function (xhr, status, error) {
                             console.log('Error:', error);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Oops...',
-                                text: 'Terjadi kesalahan saat menghapus produk.',
-                                confirmButtonColor: '#ff94c4'
-                            });
+                            showError('Terjadi kesalahan saat menghapus produk.');
                         }
                     });
                 }

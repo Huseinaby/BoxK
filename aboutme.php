@@ -1,3 +1,9 @@
+<?php
+session_start();
+
+$user = $_SESSION['user'] ?? null;
+?>
+
 <!DOCTYPE html>
 <html>
 
@@ -35,11 +41,13 @@
         <div class="container">
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
                 <a class="navbar-brand" href=""><b>BoxKado</b></a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler" type="button" data-toggle="collapse"
+                    data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                    aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav ml-auto">
+                <div class="collapse navbar-collapse w-100" id="navbarSupportedContent">
+                    <ul class="navbar-nav flex-grow-1 justify-content-lg-center align-items-lg-center">
                         <li class="nav-item">
                             <a class="nav-link" href="index.php">Home</a>
                         </li>
@@ -49,6 +57,26 @@
                         <li class="nav-item active">
                             <a class="nav-link" href="aboutme.php">Tentang Kami</a>
                         </li>
+                    </ul>
+                    <ul class="navbar-nav ml-lg-auto align-items-lg-center">
+                        <?php if ($user): ?>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                                    data-toggle="dropdown" aria-expanded="false">
+                                    <?= htmlspecialchars($user['username']) ?>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+                                    <a class="dropdown-item" href="pelanggan/logout.php">Logout</a>
+                                </div>
+                            </li>
+                        <?php else: ?>
+                            <li class="nav-item">
+                                <a class="nav-link" href="admin/index.php">Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="admin/register.php">Daftar</a>
+                            </li>
+                        <?php endif; ?>
                     </ul>
                 </div>
             </nav>
@@ -65,13 +93,23 @@
                 <div class="col-md-6">
                     <h1 class="about_taital">Tentang BoxKado</h1>
                     <p class="about_text">
-                        BoxKado hadir untuk membantu Anda menemukan hadiah terbaik yang berkesan untuk setiap momen spesial. Kami menyediakan berbagai pilihan kado unik, kreatif, dan personal yang cocok untuk keluarga, teman, pasangan, hingga kolega.
+                        BoxKado hadir untuk membantu Anda menemukan hadiah terbaik yang berkesan untuk setiap momen
+                        spesial. Kami menyediakan berbagai pilihan kado unik, kreatif, dan personal yang cocok untuk
+                        keluarga, teman, pasangan, hingga kolega.
                         <br><br>
-                        Kami percaya bahwa setiap hadiah memiliki makna mendalam, bukan sekadar barang, tetapi juga wujud perhatian dan kasih sayang. Oleh karena itu, kami menghadirkan koleksi kado yang dirancang dengan penuh ketelitian, menggunakan bahan berkualitas tinggi serta kemasan eksklusif yang elegan dan menarik.
+                        Kami percaya bahwa setiap hadiah memiliki makna mendalam, bukan sekadar barang, tetapi juga
+                        wujud perhatian dan kasih sayang. Oleh karena itu, kami menghadirkan koleksi kado yang dirancang
+                        dengan penuh ketelitian, menggunakan bahan berkualitas tinggi serta kemasan eksklusif yang
+                        elegan dan menarik.
                         <br><br>
-                        Apakah Anda mencari hadiah ulang tahun, pernikahan, anniversary, atau hanya sekadar ingin memberikan kejutan kecil yang manis? BoxKado siap membantu Anda! Dengan berbagai opsi personalisasi, Anda dapat menambahkan sentuhan spesial agar hadiah lebih berkesan dan penuh makna bagi penerima.
+                        Apakah Anda mencari hadiah ulang tahun, pernikahan, anniversary, atau hanya sekadar ingin
+                        memberikan kejutan kecil yang manis? BoxKado siap membantu Anda! Dengan berbagai opsi
+                        personalisasi, Anda dapat menambahkan sentuhan spesial agar hadiah lebih berkesan dan penuh
+                        makna bagi penerima.
                         <br><br>
-                        Kami berkomitmen untuk memberikan pengalaman belanja yang mudah, cepat, dan menyenangkan. Pilih kado impian Anda, pesan dengan beberapa klik, dan biarkan kami mengurus sisanya hingga hadiah istimewa Anda tiba di tangan orang terkasih.
+                        Kami berkomitmen untuk memberikan pengalaman belanja yang mudah, cepat, dan menyenangkan. Pilih
+                        kado impian Anda, pesan dengan beberapa klik, dan biarkan kami mengurus sisanya hingga hadiah
+                        istimewa Anda tiba di tangan orang terkasih.
                     </p>
                 </div>
             </div>

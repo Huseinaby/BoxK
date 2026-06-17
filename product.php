@@ -1,5 +1,8 @@
 <?php
+session_start();
 require 'functions.php';
+
+$user = $_SESSION['user'] ?? null;
 
 $categories = getCategory();
 $products = getProductLimit();
@@ -12,10 +15,7 @@ $products = getProductLimit();
     <!-- basic -->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- mobile metas -->
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <!-- site metas -->
     <title>BoxKado</title>
     <meta name="keywords" content="">
@@ -42,11 +42,13 @@ $products = getProductLimit();
         <div class="container">
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
                 <a class="navbar-brand" href=""><b>BoxKado</b></a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler" type="button" data-toggle="collapse"
+                    data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                    aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav ml-auto">
+                <div class="collapse navbar-collapse w-100" id="navbarSupportedContent">
+                    <ul class="navbar-nav flex-grow-1 justify-content-lg-center align-items-lg-center">
                         <li class="nav-item">
                             <a class="nav-link" href="index.php">Home</a>
                         </li>
@@ -56,6 +58,26 @@ $products = getProductLimit();
                         <li class="nav-item">
                             <a class="nav-link" href="aboutme.php">Tentang Kami</a>
                         </li>
+                    </ul>
+                    <ul class="navbar-nav ml-lg-auto align-items-lg-center">
+                        <?php if ($user): ?>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                                    data-toggle="dropdown" aria-expanded="false">
+                                    <?= htmlspecialchars($user['username']) ?>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+                                    <a class="dropdown-item" href="pelanggan/logout.php">Logout</a>
+                                </div>
+                            </li>
+                        <?php else: ?>
+                            <li class="nav-item">
+                                <a class="nav-link" href="admin/index.php">Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="admin/register.php">Daftar</a>
+                            </li>
+                        <?php endif; ?>
                     </ul>
                 </div>
             </nav>
@@ -75,17 +97,24 @@ $products = getProductLimit();
                     <select id="categoryFilter" class="form-control" style="width: 200px;" onchange="filterProducts()">
                         <option value="all">Semua Kategori</option>
                         <?php foreach ($categories as $category): ?>
-                            <option value="<?= htmlspecialchars($category['name']) ?>"><?= htmlspecialchars($category['name']) ?></option>
+                            <option value="<?= htmlspecialchars($category['name']) ?>">
+                                <?= htmlspecialchars($category['name']) ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
 
-                    <input type="text" id="searchInput" class="form-control" style="width: 300px;" placeholder="Cari produk...">
+                    <input type="text" id="searchInput" class="form-control" style="width: 300px;"
+                        placeholder="Cari produk...">
                 </div>
                 <div class="row" id="productContainer">
                     <?php foreach ($products as $product): ?>
-                        <div class="col-md-3 mb-3 product-card" data-category="<?= htmlspecialchars($product['category']) ?>" data-name="<?= strtolower(htmlspecialchars($product['name'])) ?>">
-                            <div class="card h-100" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#productModal<?= $product['id'] ?>">
-                                <img src="assets/uploads/<?= htmlspecialchars($product['image']) ?>" class="card-img-top" alt="<?= htmlspecialchars($product['name']) ?>">
+                        <div class="col-md-3 mb-3 product-card"
+                            data-category="<?= htmlspecialchars($product['category']) ?>"
+                            data-name="<?= strtolower(htmlspecialchars($product['name'])) ?>">
+                            <div class="card h-100" style="cursor: pointer;" data-bs-toggle="modal"
+                                data-bs-target="#productModal<?= $product['id'] ?>">
+                                <img src="assets/uploads/<?= htmlspecialchars($product['image']) ?>" class="card-img-top"
+                                    alt="<?= htmlspecialchars($product['name']) ?>">
                                 <div class="card-body">
                                     <h5 class="card-title"><?= htmlspecialchars($product['name']) ?></h5>
                                     <p class="card-text" style="color: #ff74a4; font-weight: bold;">
@@ -96,22 +125,30 @@ $products = getProductLimit();
                         </div>
 
                         <!-- Modal Detail Produk -->
-                        <div class="modal fade" id="productModal<?= $product['id'] ?>" tabindex="-1" aria-labelledby="productModalLabel<?= $product['id'] ?>" aria-hidden="true">
+                        <div class="modal fade" id="productModal<?= $product['id'] ?>" tabindex="-1"
+                            aria-labelledby="productModalLabel<?= $product['id'] ?>" aria-hidden="true">
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="productModalLabel<?= $product['id'] ?>"><?= htmlspecialchars($product['name']) ?></h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        <h5 class="modal-title" id="productModalLabel<?= $product['id'] ?>">
+                                            <?= htmlspecialchars($product['name']) ?>
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <img src="assets/uploads/<?= htmlspecialchars($product['image']) ?>" class="img-fluid mb-3" alt="<?= htmlspecialchars($product['name']) ?>">
-                                        <p><strong>Tentang Produk:</strong> <?= nl2br(htmlspecialchars($product['about'])) ?></p>
+                                        <img src="assets/uploads/<?= htmlspecialchars($product['image']) ?>"
+                                            class="img-fluid mb-3" alt="<?= htmlspecialchars($product['name']) ?>">
+                                        <p><strong>Tentang Produk:</strong>
+                                            <?= nl2br(htmlspecialchars($product['about'])) ?></p>
                                         <p><strong>Warna:</strong> <?= htmlspecialchars($product['color']) ?></p>
                                         <p><strong>Ukuran:</strong> <?= htmlspecialchars($product['size']) ?></p>
                                         <p><strong>Kategori:</strong> <?= htmlspecialchars($product['category']) ?></p>
-                                        <p><strong>Harga:</strong> Rp <?= number_format($product['price'], 0, ',', '.') ?></p>
+                                        <p><strong>Harga:</strong> Rp <?= number_format($product['price'], 0, ',', '.') ?>
+                                        </p>
                                         <p><strong>Status:</strong>
-                                            <span class="badge bg-<?= $product['status'] === 'tersedia' ? 'success' : 'danger' ?>">
+                                            <span
+                                                class="badge bg-<?= $product['status'] === 'tersedia' ? 'success' : 'danger' ?>">
                                                 <?= ucfirst($product['status']) ?>
                                             </span>
                                         </p>
@@ -150,7 +187,7 @@ $products = getProductLimit();
             var searchText = document.getElementById('searchInput').value.toLowerCase();
             var products = document.querySelectorAll('.product-card');
 
-            products.forEach(function(product) {
+            products.forEach(function (product) {
                 var productCategory = product.getAttribute('data-category').toLowerCase();
                 var productName = product.getAttribute('data-name');
 

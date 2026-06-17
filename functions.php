@@ -2,33 +2,216 @@
 
 $conn = mysqli_connect("localhost", "root", "", "boxkado");
 
+function requireAdminAccess($respondAsJson = false)
+{
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
+
+    $user = $_SESSION['user'] ?? null;
+    $role = $user['role'] ?? null;
+
+    if ($user && in_array($role, ['admin', 'owner'], true)) {
+        return true;
+    }
+
+    if ($respondAsJson) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Akses ditolak.'
+        ]);
+        exit;
+    }
+
+    header('Location: index.php');
+    exit;
+}
+
+function csrfToken()
+{
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
+
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+
+    return $_SESSION['csrf_token'];
+}
+
+function verifyCsrfToken($respondAsJson = false)
+{
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
+
+    $sessionToken = $_SESSION['csrf_token'] ?? '';
+    $requestToken = $_POST['csrf_token'] ?? '';
+
+    if ($sessionToken !== '' && $requestToken !== '' && hash_equals($sessionToken, $requestToken)) {
+        return true;
+    }
+
+    if ($respondAsJson) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Token permintaan tidak valid.'
+        ]);
+        exit;
+    }
+
+    header('Location: index.php');
+    exit;
+}
+
+function getClientIp()
+{
+    return $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+}
+
+function getLoginThrottleFile($username)
+{
+    $key = strtolower(trim($username)) . '|' . getClientIp();
+    return rtrim(sys_get_temp_dir(), '\\/') . DIRECTORY_SEPARATOR . 'boxkado_login_' . md5($key) . '.json';
+}
+
+function isLoginLocked($username)
+{
+    $filePath = getLoginThrottleFile($username);
+
+    if (!file_exists($filePath)) {
+        return [false, 0];
+    }
+
+    $data = json_decode((string) file_get_contents($filePath), true);
+    $lockedUntil = (int) ($data['locked_until'] ?? 0);
+    $now = time();
+
+    if ($lockedUntil > $now) {
+        return [true, $lockedUntil - $now];
+    }
+
+    return [false, 0];
+}
+
+function registerLoginFailure($username)
+{
+    $filePath = getLoginThrottleFile($username);
+    $now = time();
+    $windowSeconds = 15 * 60;
+    $maxAttempts = 5;
+
+    $data = [
+        'attempts' => 0,
+        'first_attempt_at' => $now,
+        'locked_until' => 0,
+    ];
+
+    if (file_exists($filePath)) {
+        $existing = json_decode((string) file_get_contents($filePath), true);
+        if (is_array($existing)) {
+            $data = array_merge($data, $existing);
+        }
+    }
+
+    if (($now - (int) $data['first_attempt_at']) > $windowSeconds) {
+        $data['attempts'] = 0;
+        $data['first_attempt_at'] = $now;
+    }
+
+    $data['attempts']++;
+    if ($data['attempts'] >= $maxAttempts) {
+        $data['locked_until'] = $now + $windowSeconds;
+    }
+
+    file_put_contents($filePath, json_encode($data), LOCK_EX);
+}
+
+function clearLoginFailures($username)
+{
+    $filePath = getLoginThrottleFile($username);
+
+    if (file_exists($filePath)) {
+        unlink($filePath);
+    }
+}
+
+function isValidImageUpload($file, &$errorMessage)
+{
+    $maxFileSize = 2 * 1024 * 1024;
+    $allowedMimeTypes = ['image/jpeg', 'image/png'];
+    $allowedExtensions = ['jpg', 'jpeg', 'png'];
+
+    if (!isset($file['tmp_name'], $file['name'], $file['size']) || $file['error'] !== UPLOAD_ERR_OK) {
+        $errorMessage = 'Gagal membaca file gambar.';
+        return false;
+    }
+
+    if ($file['size'] > $maxFileSize) {
+        $errorMessage = 'Ukuran gambar maksimal 2 MB.';
+        return false;
+    }
+
+    $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    if (!in_array($extension, $allowedExtensions, true)) {
+        $errorMessage = 'Hanya file JPG, JPEG, dan PNG yang diperbolehkan.';
+        return false;
+    }
+
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mimeType = $finfo->file($file['tmp_name']);
+
+    if (!in_array($mimeType, $allowedMimeTypes, true)) {
+        $errorMessage = 'File harus berupa gambar JPG atau PNG yang valid.';
+        return false;
+    }
+
+    if (@getimagesize($file['tmp_name']) === false) {
+        $errorMessage = 'File gambar tidak valid.';
+        return false;
+    }
+
+    return true;
+}
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'register') {
     register();
 } else if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'login') {
     login();
 } else if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'newCategory') {
+    requireAdminAccess(true);
+    verifyCsrfToken(true);
     newCategory();
 } else if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'deleteCategory') {
+    requireAdminAccess(true);
+    verifyCsrfToken(true);
     $id = $_POST['id'];
     deleteCategory($id);
 } else if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'addProduct') {
+    requireAdminAccess(true);
+    verifyCsrfToken(true);
     addProduct();
 } else if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'editproduct') {
+    requireAdminAccess(true);
+    verifyCsrfToken(true);
     global $conn;
 
-    $id = mysqli_real_escape_string($conn, $_POST['id']);
-    $name = mysqli_real_escape_string($conn, $_POST['productName']);
-    $desc = mysqli_real_escape_string($conn, $_POST['productDesc']);
-    $price = mysqli_real_escape_string($conn, $_POST['productPrice']);
-    $color = mysqli_real_escape_string($conn, $_POST['productColor']);
-    $size = mysqli_real_escape_string($conn, $_POST['productSize']);
-    $category = mysqli_real_escape_string($conn, $_POST['productCategory']);
-    $status = mysqli_real_escape_string($conn, $_POST['productStatus']);
+    $id = (int) $_POST['id'];
+    $name = $_POST['productName'];
+    $desc = $_POST['productDesc'];
+    $price = $_POST['productPrice'];
+    $color = $_POST['productColor'];
+    $size = $_POST['productSize'];
+    $categoryId = (int) $_POST['productCategory'];
+    $status = $_POST['productStatus'];
 
     $image = isset($_FILES['productImage']) ? $_FILES['productImage'] : null;
 
-    echo editProduct($id, $name, $desc, $price, $color, $size, $category, $status, $image);
+    echo editProduct($id, $name, $desc, $price, $color, $size, $categoryId, $status, $image);
 } else if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'deleteproduct') {
+    requireAdminAccess(true);
+    verifyCsrfToken(true);
     $id = $_POST['id'];
     deleteproduct($id);
 }
@@ -37,7 +220,7 @@ function register()
 {
     global $conn;
 
-    $username = mysqli_real_escape_string($conn, strtolower($_POST['username']));
+    $username = strtolower(trim($_POST['username']));
     $password = $_POST['password'];
 
     if (empty($username) || empty($password)) {
@@ -48,10 +231,12 @@ function register()
         exit;
     }
 
-    $query = "SELECT * FROM users WHERE username = '$username'";
-    $result = mysqli_query($conn, $query);
+    $query = mysqli_prepare($conn, "SELECT id FROM users WHERE username = ? LIMIT 1");
+    mysqli_stmt_bind_param($query, 's', $username);
+    mysqli_stmt_execute($query);
+    mysqli_stmt_store_result($query);
 
-    if (mysqli_num_rows($result) > 0) {
+    if (mysqli_stmt_num_rows($query) > 0) {
         echo json_encode([
             'success' => false,
             'message' => 'Username sudah digunakan.'
@@ -61,9 +246,10 @@ function register()
 
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-    $insertQuery = "INSERT INTO users (username, password) VALUES ('$username', '$hashedPassword')";
+    $insertQuery = mysqli_prepare($conn, "INSERT INTO users (username, password) VALUES (?, ?)");
+    mysqli_stmt_bind_param($insertQuery, 'ss', $username, $hashedPassword);
 
-    if (mysqli_query($conn, $insertQuery)) {
+    if (mysqli_stmt_execute($insertQuery)) {
         echo json_encode([
             'success' => true,
             'message' => 'Registrasi berhasil.'
@@ -80,7 +266,7 @@ function login()
 {
     global $conn;
 
-    $username = mysqli_real_escape_string($conn, strtolower($_POST['username']));
+    $username = strtolower(trim($_POST['username']));
     $password = $_POST['password'];
 
     if (empty($username) || empty($password)) {
@@ -91,31 +277,52 @@ function login()
         exit;
     }
 
-    $query = "SELECT * FROM users WHERE username = '$username'";
-    $result = mysqli_query($conn, $query);
+    [$isLocked, $remainingSeconds] = isLoginLocked($username);
+    if ($isLocked) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Terlalu banyak percobaan login. Coba lagi dalam ' . ceil($remainingSeconds / 60) . ' menit.'
+        ]);
+        exit;
+    }
 
-    if (mysqli_num_rows($result) > 0) {
+    $query = mysqli_prepare($conn, "SELECT id, username, password, role FROM users WHERE username = ? LIMIT 1");
+    mysqli_stmt_bind_param($query, 's', $username);
+    mysqli_stmt_execute($query);
+    $result = mysqli_stmt_get_result($query);
+
+    if ($result && mysqli_num_rows($result) > 0) {
         $user = mysqli_fetch_assoc($result);
 
         if (password_verify($password, $user['password'])) {
             session_start();
+            session_regenerate_id(true);
             $_SESSION['user'] = $user;
+            clearLoginFailures($username);
+
+            $safeUser = [
+                'id' => $user['id'],
+                'username' => $user['username'],
+                'role' => $user['role']
+            ];
 
             echo json_encode([
                 'success' => true,
                 'message' => 'Login berhasil.',
-                'user' => $user
+                'user' => $safeUser
             ]);
         } else {
+            registerLoginFailure($username);
             echo json_encode([
                 'success' => false,
                 'message' => 'Username / Password salah.'
             ]);
         }
     } else {
+        registerLoginFailure($username);
         echo json_encode([
             'success' => false,
-            'message' => 'Akun tidak ditemukan.'
+            'message' => 'Username / Password salah.'
         ]);
     }
 }
@@ -124,7 +331,7 @@ function newCategory()
 {
     global $conn;
 
-    $name = $_POST['name'];
+    $name = trim($_POST['name']);
 
     if (empty($name)) {
         echo json_encode([
@@ -134,10 +341,12 @@ function newCategory()
         exit;
     }
 
-    $query = "SELECT * FROM category WHERE name = '$name'";
-    $result = mysqli_query($conn, $query);
+    $query = mysqli_prepare($conn, "SELECT id FROM category WHERE name = ? LIMIT 1");
+    mysqli_stmt_bind_param($query, 's', $name);
+    mysqli_stmt_execute($query);
+    mysqli_stmt_store_result($query);
 
-    if (mysqli_num_rows($result) > 0) {
+    if (mysqli_stmt_num_rows($query) > 0) {
         echo json_encode([
             'success' => false,
             'message' => 'Kategori sudah ada.'
@@ -145,9 +354,10 @@ function newCategory()
         exit;
     }
 
-    $insertQuery = "INSERT INTO category (name) VALUES ('$name')";
+    $insertQuery = mysqli_prepare($conn, "INSERT INTO category (name) VALUES (?)");
+    mysqli_stmt_bind_param($insertQuery, 's', $name);
 
-    if (mysqli_query($conn, $insertQuery)) {
+    if (mysqli_stmt_execute($insertQuery)) {
         echo json_encode([
             'success' => true,
             'message' => 'Berhasil menambahkan kategori baru.'
@@ -164,8 +374,9 @@ function getCategory()
 {
     global $conn;
 
-    $query = "SELECT * FROM category";
-    $result = mysqli_query($conn, $query);
+    $query = mysqli_prepare($conn, "SELECT id, name FROM category");
+    mysqli_stmt_execute($query);
+    $result = mysqli_stmt_get_result($query);
 
     return $result;
 }
@@ -174,13 +385,17 @@ function deleteCategory($id)
 {
     global $conn;
 
-    $query = "SELECT * FROM category WHERE id = $id";
-    $result = mysqli_query($conn, $query);
-    $row = mysqli_fetch_assoc($result);
+    $id = (int) $id;
 
-    if ($row) {
-        $query = "DELETE FROM category WHERE id = $id";
-        $result = mysqli_query($conn, $query);
+    $query = mysqli_prepare($conn, "SELECT id FROM category WHERE id = ? LIMIT 1");
+    mysqli_stmt_bind_param($query, 'i', $id);
+    mysqli_stmt_execute($query);
+    mysqli_stmt_store_result($query);
+
+    if (mysqli_stmt_num_rows($query) > 0) {
+        $deleteQuery = mysqli_prepare($conn, "DELETE FROM category WHERE id = ?");
+        mysqli_stmt_bind_param($deleteQuery, 'i', $id);
+        $result = mysqli_stmt_execute($deleteQuery);
 
         if ($result) {
             echo json_encode(['success' => true, 'message' => 'Kategori berhasil dihapus.']);
@@ -196,19 +411,21 @@ function addProduct()
 {
     global $conn;
 
-    $productName = mysqli_real_escape_string($conn, $_POST['productName']);
-    $productAbout = mysqli_real_escape_string($conn, $_POST['productAbout']);
-    $productColor = mysqli_real_escape_string($conn, $_POST['productColor']);
-    $productSize = mysqli_real_escape_string($conn, $_POST['productSize']);
+    $productName = mysqli_real_escape_string($conn, trim($_POST['productName']));
+    $productAbout = mysqli_real_escape_string($conn, trim($_POST['productAbout']));
+    $productColor = mysqli_real_escape_string($conn, trim($_POST['productColor']));
+    $productSize = mysqli_real_escape_string($conn, trim($_POST['productSize']));
     $productCategoryId = (int) $_POST['productCategory'];
-    $productPrice = mysqli_real_escape_string($conn, $_POST['productPrice']);
-    $productStatus = mysqli_real_escape_string($conn, $_POST['productStatus']);
+    $productPrice = (float) $_POST['productPrice'];
+    $productStatus = mysqli_real_escape_string($conn, trim($_POST['productStatus']));
     $productImage = $_FILES['productImage'];
 
-    $validateCategory = "SELECT  * FROM category WHERE id = $productCategoryId";
-    $resultCategory = mysqli_query($conn, $validateCategory);
+    $validateCategory = mysqli_prepare($conn, "SELECT id FROM category WHERE id = ? LIMIT 1");
+    mysqli_stmt_bind_param($validateCategory, 'i', $productCategoryId);
+    mysqli_stmt_execute($validateCategory);
+    mysqli_stmt_store_result($validateCategory);
 
-    if (mysqli_num_rows($resultCategory) == 0) {
+    if (mysqli_stmt_num_rows($validateCategory) == 0) {
         echo json_encode([
             'success' => false,
             'message' => 'Kategori tidak valid.'
@@ -228,13 +445,12 @@ function addProduct()
         exit;
     }
 
-    $allowedExtensions = ['jpg', 'jpeg', 'png'];
-    $imageExtension = strtolower(pathinfo($productImage['name'], PATHINFO_EXTENSION));
+    $imageError = '';
 
-    if (!in_array($imageExtension, $allowedExtensions)) {
+    if (!isValidImageUpload($productImage, $imageError)) {
         echo json_encode([
             'success' => false,
-            'message' => 'Hanya file JPG, JPEG, dan PNG yang diperbolehkan.'
+            'message' => $imageError
         ]);
         exit;
     }
@@ -244,10 +460,10 @@ function addProduct()
     $imagePath = "assets/uploads/" . $imageName;
 
     if (move_uploaded_file($imageTmpName, $imagePath)) {
-        $query = "INSERT INTO product (name, about, color, size, category_id, price, status, image) 
-                  VALUES ('$productName', '$productAbout', '$productColor', '$productSize', $productCategoryId, '$productPrice', '$productStatus', '$imageName')";
+        $query = mysqli_prepare($conn, "INSERT INTO product (name, about, color, size, category_id, price, status, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        mysqli_stmt_bind_param($query, 'ssssidss', $productName, $productAbout, $productColor, $productSize, $productCategoryId, $productPrice, $productStatus, $imageName);
 
-        if (mysqli_query($conn, $query)) {
+        if (mysqli_stmt_execute($query)) {
             echo json_encode([
                 'success' => true,
                 'message' => 'Produk berhasil ditambahkan.'
@@ -291,28 +507,50 @@ function getProductLimit()
     return $result;
 }
 
-function editProduct($id, $name, $desc, $price, $color, $size, $category, $status, $image)
+function editProduct($id, $name, $desc, $price, $color, $size, $categoryId, $status, $image)
 {
     global $conn;
 
+    $name = mysqli_real_escape_string($conn, trim($name));
+    $desc = mysqli_real_escape_string($conn, trim($desc));
+    $price = (float) $price;
+    $color = mysqli_real_escape_string($conn, trim($color));
+    $size = mysqli_real_escape_string($conn, trim($size));
+    $status = mysqli_real_escape_string($conn, trim($status));
+
+    if ($id <= 0 || $categoryId <= 0) {
+        return json_encode(['success' => false, 'message' => 'Data produk atau kategori tidak valid.']);
+    }
+
+    $checkCategoryQuery = mysqli_prepare($conn, "SELECT id FROM category WHERE id = ? LIMIT 1");
+    mysqli_stmt_bind_param($checkCategoryQuery, 'i', $categoryId);
+    mysqli_stmt_execute($checkCategoryQuery);
+    mysqli_stmt_store_result($checkCategoryQuery);
+    if (mysqli_stmt_num_rows($checkCategoryQuery) === 0) {
+        return json_encode(['success' => false, 'message' => 'Kategori tidak ditemukan.']);
+    }
+
     // Ambil gambar lama
-    $query = "SELECT image FROM product WHERE id = '$id'";
-    $result = mysqli_query($conn, $query);
-    $row = mysqli_fetch_assoc($result);
+    $query = mysqli_prepare($conn, "SELECT image FROM product WHERE id = ? LIMIT 1");
+    mysqli_stmt_bind_param($query, 'i', $id);
+    mysqli_stmt_execute($query);
+    $result = mysqli_stmt_get_result($query);
+    $row = $result ? mysqli_fetch_assoc($result) : null;
+    if (!$row) {
+        return json_encode(['success' => false, 'message' => 'Produk tidak ditemukan.']);
+    }
     $oldImage = $row['image'];
 
     $imageQuery = '';
+    $imageName = '';
     if ($image && $image['name'] != '') {
-        $allowedExtensions = ['jpeg', 'jpg', 'png'];
-        $imageExtension = strtolower(pathinfo($image['name'], PATHINFO_EXTENSION));
-
-        // Validasi ekstensi gambar
-        if (!in_array($imageExtension, $allowedExtensions)) {
-            return json_encode(['success' => false, 'message' => 'Hanya gambar JPEG, JPG, dan PNG diperbolehkan.']);
+        $imageError = '';
+        if (!isValidImageUpload($image, $imageError)) {
+            return json_encode(['success' => false, 'message' => $imageError]);
         }
 
         // Tentukan direktori target untuk gambar
-        $targetDir = '../assets/uploads/';
+        $targetDir = 'assets/uploads/';
         $oldImagePath = $targetDir . $oldImage;
 
         // Hapus gambar lama jika ada
@@ -333,35 +571,42 @@ function editProduct($id, $name, $desc, $price, $color, $size, $category, $statu
     }
 
     // Query untuk memperbarui produk
-    $query = "UPDATE product 
-              SET name = '$name', 
-                  about = '$desc', 
-                  price = '$price', 
-                  color = '$color', 
-                  size = '$size', 
-                  category_id = $category, 
-                  status = '$status'
-                  $imageQuery 
-              WHERE id = '$id'";
-    $result = mysqli_query($conn, $query);
+    if ($imageQuery !== '') {
+        $query = mysqli_prepare($conn, "UPDATE product SET name = ?, about = ?, price = ?, color = ?, size = ?, category_id = ?, status = ?, image = ? WHERE id = ?");
+        mysqli_stmt_bind_param($query, 'ssdssissi', $name, $desc, $price, $color, $size, $categoryId, $status, $imageName, $id);
+    } else {
+        $query = mysqli_prepare($conn, "UPDATE product SET name = ?, about = ?, price = ?, color = ?, size = ?, category_id = ?, status = ? WHERE id = ?");
+        mysqli_stmt_bind_param($query, 'ssdssisi', $name, $desc, $price, $color, $size, $categoryId, $status, $id);
+    }
 
-    return json_encode(['success' => $result, 'message' => $result ? 'Produk berhasil diperbarui.' : 'Gagal memperbarui produk.']);
+    $result = mysqli_stmt_execute($query);
+
+    if (!$result) {
+        return json_encode(['success' => false, 'message' => 'Gagal memperbarui produk: ' . mysqli_error($conn)]);
+    }
+
+    return json_encode(['success' => true, 'message' => 'Produk berhasil diperbarui.']);
 }
 
 function deleteProduct($id)
 {
     global $conn;
 
-    $query = "SELECT image FROM product WHERE id = $id";
-    $result = mysqli_query($conn, $query);
-    $row = mysqli_fetch_assoc($result);
+    $id = (int) $id;
+
+    $query = mysqli_prepare($conn, "SELECT image FROM product WHERE id = ? LIMIT 1");
+    mysqli_stmt_bind_param($query, 'i', $id);
+    mysqli_stmt_execute($query);
+    $result = mysqli_stmt_get_result($query);
+    $row = $result ? mysqli_fetch_assoc($result) : null;
 
     if ($row) {
         $image = $row['image'];
         $imagePath = 'assets/uploads/' . $image;
 
-        $query = "DELETE FROM product WHERE id = $id";
-        $result = mysqli_query($conn, $query);
+        $query = mysqli_prepare($conn, "DELETE FROM product WHERE id = ?");
+        mysqli_stmt_bind_param($query, 'i', $id);
+        $result = mysqli_stmt_execute($query);
 
         if ($result) {
             if (file_exists($imagePath)) {

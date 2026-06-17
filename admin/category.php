@@ -3,13 +3,11 @@ session_start();
 
 require '../functions.php';
 
-if (!isset($_SESSION['user'])) {
-    header('Location: index.php');
-    exit;
-}
+requireAdminAccess();
 
 $user = $_SESSION['user'];
 $categories = getCategory();
+$csrfToken = csrfToken();
 ?>
 
 <!DOCTYPE html>
@@ -103,7 +101,7 @@ $categories = getCategory();
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
-                            <?= $user['username'] ?>
+                            <?= htmlspecialchars($user['username'], ENT_QUOTES, 'UTF-8') ?>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                             <li><a class="dropdown-item" href="logout.php">Logout</a></li>
@@ -184,6 +182,36 @@ $categories = getCategory();
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        var csrfToken = <?= json_encode($csrfToken) ?>;
+
+        function parseJsonResponse(response) {
+            try {
+                return JSON.parse(response);
+            } catch (error) {
+                return null;
+            }
+        }
+
+        function showAlert(icon, title, message) {
+            Swal.fire({
+                icon: icon,
+                title: title,
+                text: message,
+                confirmButtonColor: '#ff94c4'
+            });
+        }
+
+        function showSuccessAndReload(title, message) {
+            Swal.fire({
+                icon: 'success',
+                title: title,
+                text: message,
+                confirmButtonColor: '#ff94c4'
+            }).then(function () {
+                location.reload();
+            });
+        }
+
         $(document).ready(function () {
             $("#categoryForm").submit(function (e) {
                 e.preventDefault();
@@ -196,35 +224,24 @@ $categories = getCategory();
                     data: {
                         action: 'newCategory',
                         name: name,
+                        csrf_token: csrfToken
                     },
                     success: function (response) {
-                        var data = JSON.parse(response);
+                        var data = parseJsonResponse(response);
+
+                        if (!data) {
+                            showAlert('error', 'Error', 'Format respons tidak valid.');
+                            return;
+                        }
 
                         if (data.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success',
-                                text: data.message,
-                                confirmButtonColor: '#ff94c4'
-                            }).then(function () {
-                                window.location.href = "category.php";
-                            });
+                            showSuccessAndReload('Success', data.message);
                         } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: data.message,
-                                confirmButtonColor: '#ff94c4'
-                            });
+                            showAlert('error', 'Error', data.message);
                         }
                     },
                     error: function (xhr, status, error) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Terjadi Kesalahan',
-                            text: error,
-                            confirmButtonColor: '#ff94c4'
-                        });
+                        showAlert('error', 'Terjadi Kesalahan', error);
                     }
                 });
             });
@@ -247,36 +264,26 @@ $categories = getCategory();
                         type: 'POST',
                         data: {
                             action: 'deleteCategory',
-                            id: categoryId
+                            id: categoryId,
+                            csrf_token: csrfToken
                         },
                         success: function (response) {
-                            var data = JSON.parse(response);
+                            var data = parseJsonResponse(response);
+
+                            if (!data) {
+                                showAlert('error', 'Terjadi Kesalahan', 'Format respons tidak valid.');
+                                return;
+                            }
+
                             if (data.success) {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Kategori Dihapus',
-                                    text: data.message,
-                                    confirmButtonColor: '#ff94c4'
-                                }).then(function () {
-                                    location.reload();
-                                });
+                                showSuccessAndReload('Kategori Dihapus', data.message);
                             } else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Terjadi Kesalahan',
-                                    text: data.message,
-                                    confirmButtonColor: '#ff94c4'
-                                });
+                                showAlert('error', 'Terjadi Kesalahan', data.message);
                             }
                         },
                         error: function (xhr, status, error) {
                             console.log('Error:', error);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Oops...',
-                                text: 'Terjadi kesalahan saat menghapus kategori.',
-                                confirmButtonColor: '#ff94c4'
-                            });
+                            showAlert('error', 'Oops...', 'Terjadi kesalahan saat menghapus kategori.');
                         }
                     });
                 }

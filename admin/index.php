@@ -2,7 +2,11 @@
 session_start();
 
 if (isset($_SESSION['user'])) {
-    header('Location: dashboard.php');
+    if (isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'pelanggan') {
+        header('Location: ../pelanggan/product.php');
+    } else {
+        header('Location: dashboard.php');
+    }
     exit;
 }
 
@@ -82,11 +86,13 @@ if (isset($_SESSION['user'])) {
                         <form id="loginForm" method="POST">
                             <div class="mb-3">
                                 <label for="username" class="form-label">Username</label>
-                                <input type="text" class="form-control" id="username" name="username" autocomplete="off">
+                                <input type="text" class="form-control" id="username" name="username"
+                                    autocomplete="off">
                             </div>
                             <div class="mb-3">
                                 <label for="password" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="password" name="password" autocomplete="off">
+                                <input type="password" class="form-control" id="password" name="password"
+                                    autocomplete="off">
                             </div>
                             <button type="submit" class="btn btn-login">Masuk</button>
                         </form>
@@ -110,8 +116,8 @@ if (isset($_SESSION['user'])) {
     <!-- Add SweetAlert2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        $(document).ready(function() {
-            $("#loginForm").submit(function(e) {
+        $(document).ready(function () {
+            $("#loginForm").submit(function (e) {
                 e.preventDefault();
 
                 var username = $("#username").val();
@@ -125,17 +131,19 @@ if (isset($_SESSION['user'])) {
                         username: username,
                         password: password
                     },
-                    success: function(response) {
+                    success: function (response) {
                         var data = JSON.parse(response);
 
                         if (data.success) {
+                            var redirectUrl = (data.user && data.user.role === 'pelanggan') ? '../pelanggan/product.php' : 'dashboard.php';
+
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Berhasil!',
                                 text: data.message,
                                 confirmButtonColor: '#ff94c4'
-                            }).then(function() {
-                                window.location.href = "dashboard.php";
+                            }).then(function () {
+                                window.location.href = redirectUrl;
                             });
                         } else {
                             Swal.fire({
@@ -146,7 +154,7 @@ if (isset($_SESSION['user'])) {
                             });
                         }
                     },
-                    error: function(xhr, status, error) {
+                    error: function (xhr, status, error) {
                         Swal.fire({
                             icon: 'error',
                             title: 'Terjadi kesalahan',
