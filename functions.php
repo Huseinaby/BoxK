@@ -214,6 +214,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     verifyCsrfToken(true);
     $id = $_POST['id'];
     deleteproduct($id);
+} else if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'addToCart') {
+    addToCart();
 }
 
 function register()
@@ -619,4 +621,69 @@ function deleteProduct($id)
     } else {
         echo json_encode(['success' => false, 'message' => 'Produk tidak ditemukan.']);
     }
+}
+
+function addToCart()
+{
+    global $conn;
+
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
+
+    $user = $_SESSION['user'] ?? null;
+
+    if (!$user) {
+        echo json_encode(['success' => false, 'message' => 'Anda harus login untuk menambahkan produk ke keranjang.']);
+        exit;
+    }
+
+    $userId = (int) $user['id'];
+    $productId = (int) $_POST['product_id'];
+    $quantity = isset($_POST['quantity']) ? (int) $_POST['quantity'] : 1;
+
+    if ($productId <= 0 || $quantity <= 0) {
+        echo json_encode(['success' => false, 'message' => 'Data produk tidak valid.']);
+        exit;
+    }
+
+    $checkQuery = mysqli_prepare($conn, "SELECT id, quantity FROM carts WHERE user_id = ? AND product_id = ? LIMIT 1");
+    mysqli_stmt_bind_param($checkQuery, 'ii', $userId, $productId);
+    mysqli_stmt_execute($checkQuery);
+    $result = mysqli_stmt_get_result($checkQuery);
+    $cartItem = mysqli_fetch_assoc($result);
+
+    if ($cartItem) {
+        $newQuantity = $cartItem['quantity'] + $quantity;
+        $updateQuery = mysqli_prepare($conn, "UPDATE carts SET quantity = ? WHERE id = ?");
+        mysqli_stmt_bind_param($updateQuery, 'ii', $newQuantity, $cartItem['id']);
+
+        if (mysqli_stmt_execute($updateQuery)) {
+            echo json_encode([
+                'success' => true,
+                'message' => 'Jumlah produk di keranjang berhasil ditambahkan.',
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Gagal memperbarui keranjang.',
+            ]);
+        }
+    } else {
+        $insertQuery = mysqli_prepare($conn, "INSERT INTO carts (user_id, product_id, quantity) VALUES (?, ?, ?)");
+        mysqli_stmt_bind_param($insertQuery, 'iii', $userId, $productId, $quantity);
+
+        if (mysqli_stmt_execute($insertQuery)) {
+            echo json_encode([
+                'success' => true,
+                'message' => 'Produk berhasil ditambahkan ke keranjang.',
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Gagal menambahkan produk ke keranjang.',
+            ]);
+        }
+    }
+    exit;
 }

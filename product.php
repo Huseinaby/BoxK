@@ -161,21 +161,23 @@ $products = getProductLimit();
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary"
                                             data-bs-dismiss="modal">Tutup</button>
-
                                         <?php if ($product['status'] === 'tersedia'): ?>
-                                                                                <?php if ($user): ?>
-                                                <a href="keranjang_aksi.php?action=add&id=<?= $product['id'] ?>"
-                                                    class="btn text-white" style="background-color: #ff74a4;">
-                                                    <i class="fa fa-shopping-cart"></i> Masukkan ke Keranjang
-                                                </a>
-                                                                                <?php else: ?>
+                                            <?php if ($user): ?>
+                                                <form onsubmit="addCartAjax(event, <?= $product['id'] ?>)">
+                                                    <input type="hidden" name="action" value="addToCart">
+                                                    <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
+                                                    <input type="hidden" name="quantity" value=1>
+                                                    <button type="submit" class="btn text-white" style="background-color: #ff74a4">
+                                                        <i class="fa fa-shopping-cart"></i>Masukkan ke keranjang</button>
+                                                </form>
+                                            <?php else: ?>
                                                 <a href="admin/index.php" class="btn btn-warning text-dark fw-bold">
                                                     <i class="fa fa-sign-in"></i> Login untuk Membeli
                                                 </a>
-                                                                                <?php endif; ?>
-                                                                            <?php else: ?>
+                                            <?php endif; ?>
+                                        <?php else: ?>
                                             <button class="btn btn-danger" disabled>Stok Habis</button>
-                                                                            <?php endif; ?>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
@@ -224,6 +226,33 @@ $products = getProductLimit();
                     product.style.display = "none";
                 }
             });
+        }
+
+        function addCartAjax(event, productId) {
+            event.preventDefault();
+
+            const formData = new FormData();
+            formData.append('action', 'addToCart');
+            formData.append('product_id', productId);
+            formData.append('quantity', 1);
+
+            fetch('functions.php', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.success) {
+                        const modalElement = document.getElementById(`productModal${productId}`);
+                        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                        if (modalInstance) modalInstance.hide();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan sistem');
+                });
         }
     </script>
 </body>
