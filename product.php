@@ -158,6 +158,25 @@ $products = getProductLimit();
                                             </span>
                                         </p>
                                     </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Tutup</button>
+
+                                        <?php if ($product['status'] === 'tersedia'): ?>
+                                                                                <?php if ($user): ?>
+                                                <a href="keranjang_aksi.php?action=add&id=<?= $product['id'] ?>"
+                                                    class="btn text-white" style="background-color: #ff74a4;">
+                                                    <i class="fa fa-shopping-cart"></i> Masukkan ke Keranjang
+                                                </a>
+                                                                                <?php else: ?>
+                                                <a href="admin/index.php" class="btn btn-warning text-dark fw-bold">
+                                                    <i class="fa fa-sign-in"></i> Login untuk Membeli
+                                                </a>
+                                                                                <?php endif; ?>
+                                                                            <?php else: ?>
+                                            <button class="btn btn-danger" disabled>Stok Habis</button>
+                                                                            <?php endif; ?>
+                                    </div>
                                 </div>
                             </div>
                         </div>
