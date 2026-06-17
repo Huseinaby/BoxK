@@ -15,7 +15,10 @@ $products = getProductLimit();
     <!-- basic -->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- mobile metas -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
     <!-- site metas -->
     <title>BoxKado</title>
     <meta name="keywords" content="">
@@ -62,13 +65,15 @@ $products = getProductLimit();
                     <ul class="navbar-nav ml-lg-auto align-items-lg-center">
                         <?php if ($user): ?>
                             <li class="nav-item dropdown">
+                                <!-- Ubah data-toggle menjadi data-bs-toggle -->
                                 <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                    data-toggle="dropdown" aria-expanded="false">
+                                    data-bs-toggle="dropdown" aria-expanded="false">
                                     <?= htmlspecialchars($user['username']) ?>
                                 </a>
-                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
-                                    <a class="dropdown-item" href="pelanggan/logout.php">Logout</a>
-                                </div>
+                                <!-- Di Bootstrap 5, dropdown-menu-right diubah menjadi dropdown-menu-end -->
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li><a class="dropdown-item" href="admin/logout.php">Logout</a></li>
+                                </ul>
                             </li>
                         <?php else: ?>
                             <li class="nav-item">

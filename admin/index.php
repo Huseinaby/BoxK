@@ -135,7 +135,7 @@ if (isset($_SESSION['user'])) {
                         var data = JSON.parse(response);
 
                         if (data.success) {
-                            var redirectUrl = (data.user && data.user.role === 'pelanggan') ? '../pelanggan/product.php' : 'dashboard.php';
+                            var redirectUrl = (data.user && data.user.role === 'pelanggan') ? '../product.php' : 'dashboard.php';
 
                             Swal.fire({
                                 icon: 'success',

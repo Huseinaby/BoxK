@@ -66,7 +66,7 @@ $user = $_SESSION['user'] ?? null;
                                     <?= htmlspecialchars($user['username']) ?>
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
-                                    <a class="dropdown-item" href="pelanggan/logout.php">Logout</a>
+                                    <a class="dropdown-item" href="admin/logout.php">Logout</a>
                                 </div>
                             </li>
                         <?php else: ?>
