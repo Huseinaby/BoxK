@@ -687,3 +687,43 @@ function addToCart()
     }
     exit;
 }
+
+// Berikan nilai default = null pada parameter $userId
+function getCartItems($userId = null)
+{
+    global $conn;
+
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
+
+    $user = $_SESSION['user'] ?? null;
+
+    // Jika parameter $userId tidak diisi saat fungsi dipanggil, ambil dari session login
+    if ($userId === null) {
+        if (!$user) {
+            return [];
+        }
+        $userId = (int) $user['id'];
+    } else {
+        $userId = (int) $userId;
+    }
+
+    $query = "SELECT carts.id AS cart_id, carts.quantity, product.id AS product_id, 
+                     product.name, product.price, product.image, product.status 
+              FROM carts 
+              JOIN product ON carts.product_id = product.id 
+              WHERE carts.user_id = $userId 
+              ORDER BY carts.created_at DESC";
+
+    $result = mysqli_query($conn, $query);
+    $items = [];
+
+    if ($result) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $items[] = $row;
+        }
+    }
+
+    return $items;
+}
