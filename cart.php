@@ -43,6 +43,33 @@ $total = 0;
     .dropdown-menu {
       z-index: 10000 !important;
     }
+
+    /* Menghilangkan tombol panah bawaan browser di input number */
+    .custom-qty-input::-webkit-outer-spin-button,
+    .custom-qty-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .custom-qty-input {
+      -moz-appearance: textfield;
+      border-left: none !important;
+      border-right: none !important;
+      font-weight: 500;
+    }
+
+    /* Mempercantik interaksi tombol minus/plus */
+    .input-group .btn-outline-secondary {
+      border-color: #dee2e6;
+      color: #6c757d;
+      transition: all 0.2s ease;
+    }
+
+    .input-group .btn-outline-secondary:hover {
+      background-color: #ff74a4 !important;
+      border-color: #ff74a4 !important;
+      color: white !important;
+    }
   </style>
 </head>
 
@@ -164,9 +191,21 @@ $total = 0;
                       Rp <?= number_format($cart['price'], 0, ',', '.') ?>
                     </td>
 
-                    <td width="130">
-                      <input type="number" class="form-control text-center form-control-sm" value="<?= $cart['quantity'] ?>"
-                        min="1" onchange="updateCartQuantity(<?= $cartId ?>, this.value)">
+                    <td width="160">
+                      <div class="input-group input-group-sm justify-content-center">
+                        <button type="button" class="btn btn-outline-secondary px-2 py-1"
+                          onclick="changeQty(this, -1, <?= $cartId ?>)">
+                          <i class="fa fa-minus"></i>
+                        </button>
+
+                        <input type="number" class="form-control text-center custom-qty-input bg-white"
+                          value="<?= $cart['quantity'] ?>" min="1" readonly style="max-width: 60px;">
+
+                        <button type="button" class="btn btn-outline-secondary px-2 py-1"
+                          onclick="changeQty(this, 1, <?= $cartId ?>)">
+                          <i class="fa fa-plus"></i>
+                        </button>
+                      </div>
                     </td>
 
                     <td class="text-end fw-bold" style="color: #ff74a4;">
@@ -227,17 +266,76 @@ $total = 0;
   <script src="assets/js/custom.js"></script>
 
   <script>
-    function updateCartQuantity(cartId, newQty) {
-      if (newQty < 1) return;
-      console.log("Update cart ID " + cartId + " menjadi " + newQty);
-      // Logika AJAX update kuantitas database dipasang di sini nanti
-    }
-
     function deleteCartItem(cartId) {
       if (confirm("Apakah Anda yakin ingin menghapus produk ini dari keranjang?")) {
-        console.log("Hapus cart ID " + cartId);
-        // Logika AJAX hapus data database dipasang di sini nanti
+
+        // Bungkus data cart_id ke dalam FormData
+        const formData = new FormData();
+        formData.append('action', 'deleteCartItem');
+        formData.append('cart_id', cartId);
+
+        // Kirim data ke backend via POST
+        fetch('functions.php', {
+          method: 'POST',
+          body: formData
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              // Jika berhasil dihapus, reload halaman agar tabel diperbarui
+              window.location.reload();
+            } else {
+              alert(data.message);
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan sistem saat menghapus produk.');
+          });
       }
+    }
+
+    function changeQty(button, change, cartId) {
+      // Mencari input terdekat di dalam grupnya
+      const input = button.parentElement.querySelector('.custom-qty-input');
+      let currentVal = parseInt(input.value) || 1;
+
+      let newVal = currentVal + change;
+
+      // Batasi agar jumlah tidak boleh kurang dari 1
+      if (newVal >= 1) {
+        input.value = newVal;
+        // Panggil fungsi utama update ke database
+        updateCartQuantity(cartId, newVal);
+      }
+    }
+
+    function updateCartQuantity(cartId, newQty) {
+      if (newQty < 1) return;
+
+      // Kirim data menggunakan FormData ke functions.php via POST
+      const formData = new FormData();
+      formData.append('action', 'updateCartQty');
+      formData.append('cart_id', cartId);
+      formData.append('quantity', newQty);
+
+      fetch('functions.php', {
+        method: 'POST',
+        body: formData
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Jika berhasil, reload halaman secara instan untuk memperbarui Subtotal & Total Bayar
+            window.location.reload();
+          } else {
+            alert(data.message);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Terjadi kesalahan sistem saat memperbarui jumlah.');
+        });
     }
   </script>
 

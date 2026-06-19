@@ -216,6 +216,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     deleteproduct($id);
 } else if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'addToCart') {
     addToCart();
+    // Tambahkan baris ini di area if-else routing POST functions.php Anda
+} else if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'updateCartQty') {
+    updateCartQty();
+    // Tambahkan baris ini di area if-else routing POST functions.php Anda
+} else if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'deleteCartItem') {
+    deleteCartItemAction();
 }
 
 function register()
@@ -726,4 +732,73 @@ function getCartItems($userId = null)
     }
 
     return $items;
+}
+
+function updateCartQty()
+{
+    global $conn;
+
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
+
+    $user = $_SESSION['user'] ?? null;
+    if (!$user) {
+        echo json_encode(['success' => false, 'message' => 'Sesi Anda telah berakhir.']);
+        exit;
+    }
+
+    $cartId = (int) $_POST['cart_id'];
+    $quantity = (int) $_POST['quantity'];
+    $userId = (int) $user['id'];
+
+    if ($cartId <= 0 || $quantity <= 0) {
+        echo json_encode(['success' => false, 'message' => 'Data tidak valid.']);
+        exit;
+    }
+
+    // Pastikan baris keranjang tersebut memang benar milik user yang sedang login (keamanan)
+    $query = mysqli_prepare($conn, "UPDATE carts SET quantity = ? WHERE id = ? AND user_id = ?");
+    mysqli_stmt_bind_param($query, 'iii', $quantity, $cartId, $userId);
+
+    if (mysqli_stmt_execute($query)) {
+        echo json_encode(['success' => true, 'message' => 'Jumlah berhasil diperbarui.']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Gagal memperbarui database.']);
+    }
+    exit;
+}
+
+function deleteCartItemAction()
+{
+    global $conn;
+
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
+
+    $user = $_SESSION['user'] ?? null;
+    if (!$user) {
+        echo json_encode(['success' => false, 'message' => 'Sesi Anda telah berakhir.']);
+        exit;
+    }
+
+    $cartId = (int) $_POST['cart_id'];
+    $userId = (int) $user['id'];
+
+    if ($cartId <= 0) {
+        echo json_encode(['success' => false, 'message' => 'Data tidak valid.']);
+        exit;
+    }
+
+    // Pastikan item keranjang yang dihapus murni milik user yang sedang login demi keamanan
+    $query = mysqli_prepare($conn, "DELETE FROM carts WHERE id = ? AND user_id = ?");
+    mysqli_stmt_bind_param($query, 'ii', $cartId, $userId);
+
+    if (mysqli_stmt_execute($query)) {
+        echo json_encode(['success' => true, 'message' => 'Produk berhasil dihapus dari keranjang.']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Gagal menghapus produk dari database.']);
+    }
+    exit;
 }

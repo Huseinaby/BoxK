@@ -57,6 +57,9 @@ $user = $_SESSION['user'] ?? null;
                         <li class="nav-item active">
                             <a class="nav-link" href="aboutme.php">Tentang Kami</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="cart.php">Keranjang</a>
+                        </li>
                     </ul>
                     <ul class="navbar-nav ml-lg-auto align-items-lg-center">
                         <?php if ($user): ?>
