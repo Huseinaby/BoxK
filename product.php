@@ -232,7 +232,7 @@ $products = getProductLimit();
         }
 
         function addCartAjax(event, productId) {
-            event.preventDefault();
+            event.preventDefault(); // Menghentikan form agar tidak submit lewat URL browser
 
             const formData = new FormData();
             formData.append('action', 'addToCart');
@@ -245,11 +245,26 @@ $products = getProductLimit();
             })
                 .then(response => response.json())
                 .then(data => {
-                    alert(data.message);
                     if (data.success) {
+                        // 1. Masukkan teks pesan dari backend ke dalam komponen Toast
+                        document.getElementById('toastMessage').innerText = data.message;
+
+                        // 2. Inisialisasi dan munculkan Bootstrap Toast
+                        const toastElement = document.getElementById('successToast');
+                        const toast = new bootstrap.Toast(toastElement, { delay: 3000 }); // Otomatis hilang dalam 3 detik
+                        toast.show();
+
+                        // 3. Sembunyikan modal produk jika sedang terbuka
                         const modalElement = document.getElementById(`productModal${productId}`);
-                        const modalInstance = bootstrap.Modal.getInstance(modalElement);
-                        if (modalInstance) modalInstance.hide();
+                        if (modalElement) {
+                            const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                            if (modalInstance) {
+                                modalInstance.hide();
+                            }
+                        }
+                    } else {
+                        // Jika gagal (misal belum login), Anda bisa tetap pakai alert biasa atau buat toast warna merah
+                        alert(data.message);
                     }
                 })
                 .catch(error => {
@@ -258,6 +273,19 @@ $products = getProductLimit();
                 });
         }
     </script>
+
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+        <div id="successToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive"
+            aria-atomic="true" style="background-color: #ff74a4;">
+            <div class="d-flex">
+                <div class="toast-body fw-bold">
+                    <span id="toastMessage"></span>
+                </div>
+                <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

@@ -266,15 +266,32 @@ $total = 0;
   <script src="assets/js/custom.js"></script>
 
   <script>
-    function deleteCartItem(cartId) {
-      if (confirm("Apakah Anda yakin ingin menghapus produk ini dari keranjang?")) {
+    // Menyimpan instance modal secara global agar bisa ditutup lewat fungsi apa saja
+    let deleteModalInstance = null;
 
+    function deleteCartItem(cartId) {
+      // 1. Inisialisasi dan tampilkan Bootstrap 5 Modal Konfirmasi
+      const deleteModalElement = document.getElementById('deleteConfirmModal');
+      deleteModalInstance = new bootstrap.Modal(deleteModalElement);
+      deleteModalInstance.show();
+
+      // 2. Ikat aksi klik tombol "Ya, Hapus" secara dinamis tepat saat modal muncul
+      const btnDoDelete = document.getElementById('btnDoDelete');
+
+      // Bersihkan event listener lama agar tidak terjadi penumpukan (double post)
+      btnDoDelete.replaceWith(btnDoDelete.cloneNode(true));
+
+      // Ambil kembali elemen tombol yang baru setelah di-clone
+      const freshBtnDoDelete = document.getElementById('btnDoDelete');
+
+      // Tambahkan event klik baru
+      freshBtnDoDelete.addEventListener('click', function () {
         // Bungkus data cart_id ke dalam FormData
         const formData = new FormData();
         formData.append('action', 'deleteCartItem');
         formData.append('cart_id', cartId);
 
-        // Kirim data ke backend via POST
+        // Kirim data ke backend via POST ke functions.php
         fetch('functions.php', {
           method: 'POST',
           body: formData
@@ -282,7 +299,10 @@ $total = 0;
           .then(response => response.json())
           .then(data => {
             if (data.success) {
-              // Jika berhasil dihapus, reload halaman agar tabel diperbarui
+              // Sembunyikan modal sebelum reload halaman
+              if (deleteModalInstance) {
+                deleteModalInstance.hide();
+              }
               window.location.reload();
             } else {
               alert(data.message);
@@ -292,7 +312,33 @@ $total = 0;
             console.error('Error:', error);
             alert('Terjadi kesalahan sistem saat menghapus produk.');
           });
-      }
+      });
+    }
+
+    function updateCartQuantity(cartId, newQty) {
+      if (newQty < 1) return;
+
+      const formData = new FormData();
+      formData.append('action', 'updateCartQty');
+      formData.append('cart_id', cartId);
+      formData.append('quantity', newQty);
+
+      fetch('functions.php', {
+        method: 'POST',
+        body: formData
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            window.location.reload();
+          } else {
+            alert(data.message);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Terjadi kesalahan sistem saat memperbarui jumlah.');
+        });
     }
 
     function changeQty(button, change, cartId) {
@@ -309,36 +355,27 @@ $total = 0;
         updateCartQuantity(cartId, newVal);
       }
     }
-
-    function updateCartQuantity(cartId, newQty) {
-      if (newQty < 1) return;
-
-      // Kirim data menggunakan FormData ke functions.php via POST
-      const formData = new FormData();
-      formData.append('action', 'updateCartQty');
-      formData.append('cart_id', cartId);
-      formData.append('quantity', newQty);
-
-      fetch('functions.php', {
-        method: 'POST',
-        body: formData
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            // Jika berhasil, reload halaman secara instan untuk memperbarui Subtotal & Total Bayar
-            window.location.reload();
-          } else {
-            alert(data.message);
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          alert('Terjadi kesalahan sistem saat memperbarui jumlah.');
-        });
-    }
   </script>
 
+  <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0">
+          <h5 class="modal-title fw-bold" id="deleteConfirmModalLabel">Hapus Produk?</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center py-4">
+          <div class="text-danger mb-3" style="font-size: 4.5rem; line-height: 1; font-weight: 300;">&times;</div>
+          <p class="fs-5 mb-0">Apakah Anda yakin ingin menghapus produk ini dari keranjang?</p>
+        </div>
+        <div class="modal-footer border-0 justify-content-center">
+          <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Batal</button>
+          <button type="button" id="btnDoDelete" class="btn btn-danger px-4">Ya, Hapus</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>
