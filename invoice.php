@@ -144,196 +144,232 @@ $items = mysqli_stmt_get_result($queryItems);
 
       <div class="row justify-content-center">
         <div class="col-lg-9">
-
-          <div class="alert alert-success text-center py-3 mb-4 border-0 shadow-sm">
-            <h4 class="fw-bold mb-1"><i class="fa fa-check-circle me-2"></i>Pesanan Berhasil Dibuat!</h4>
-            <p class="mb-0 small text-muted">Silakan selesaikan pembayaran sesuai petunjuk di bawah agar pesanan segera
-              diproses.</p>
+          <?php if ($order['status'] === 'pending' && empty($order['bukti_pembayaran'])): ?>
+            <div class="alert alert-warning text-center py-3 mb-4 border-0 shadow-sm">
+              <h4 class="fw-bold mb-1" style="color: #664d03;"><i class="fa fa-info-circle me-2"></i>Menunggu Pembayaran
+              </h4>
+              <p class="mb-0 small text-muted">Silakan lakukan transfer sesuai metode pilihan Anda dan unggah bukti bayar
+                di bawah.</p>
+            </div>
+          <?php elseif ($order['status'] === 'pending' && !empty($order['bukti_pembayaran'])): ?>
+            <div class="alert alert-info text-center py-3 mb-4 border-0 shadow-sm">
+              <h4 class="fw-bold mb-1" style="color: #055160;"><i class="fa fa-clock-o me-2"></i>Menunggu Verifikasi Admin
+              </h4>
+              <p class="mb-0 small text-muted">Bukti pembayaran Anda telah dikirim dan sedang diperiksa oleh tim kami.
+                Mohon tunggu ya!</p>
+            </div>
+          <?php elseif ($order['status'] === 'proses'): ?>
+            <div class="alert alert-primary text-center py-3 mb-4 border-0 shadow-sm">
+              <h4 class="fw-bold mb-1"><i class="fa fa-refresh fa-spin me-2"></i>Pesanan Sedang Diproses</h4>
+              <p class="mb-0 small text-muted">Pembayaran valid! Kado Anda sedang dipersiapkan atau dalam perjalanan oleh
+                petugas.</p>
+            </div>
+          <?php elseif ($order['status'] === 'selesai'): ?>
+            <div class="alert alert-success text-center py-3 mb-4 border-0 shadow-sm">
+              <h4 class="fw-bold mb-1"><i class="fa fa-check-circle me-2"></i>Pesanan Selesai</h4>
+              <p class="mb-0 small text-muted">Kado telah diterima/diambil. Terima kasih banyak telah memercayakan
+                BoxKado!</p>
+            </div>
+          <?php elseif ($order['status'] === 'dibatalkan'): ?>
+            <div class="alert alert-danger text-center py-3 mb-4 border-0 shadow-sm">
+              <h4 class="fw-bold mb-1"><i class="fa fa-times-circle me-2"></i>Pesanan Dibatalkan</h4>
+              <p class="mb-0 small text-muted">Mohon maaf, pesanan ini telah dibatalkan oleh sistem atau admin.</p>
+            </div>
+          <?php endif; ?>
+          <!-- Baris Info Nota -->
+          <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+            <div>
+              <h3 class="fw-bold text-secondary mb-1">INVOICE PESANAN</h3>
+              <span class="fw-bold text-muted">
+                <?= htmlspecialchars($order['invoice_number']) ?>
+              </span>
+            </div>
+            <div class="text-md-end mt-2 mt-md-0">
+              <span class="badge px-3 py-2 fs-6 badge-<?= htmlspecialchars($order['status']) ?>">
+                Status:
+                <?= ucfirst(htmlspecialchars($order['status'])) ?>
+              </span>
+              <div class="text-muted small mt-1">Tanggal:
+                <?= date('d M Y, H:i', strtotime($order['created_at'])) ?>
+              </div>
+            </div>
           </div>
 
-          <div class="card invoice-card shadow-sm border-0 bg-white p-4 p-md-5">
+          <hr>
 
-            <!-- Baris Info Nota -->
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
-              <div>
-                <h3 class="fw-bold text-secondary mb-1">INVOICE PESANAN</h3>
-                <span class="fw-bold text-muted">
-                  <?= htmlspecialchars($order['invoice_number']) ?>
-                </span>
-              </div>
-              <div class="text-md-end mt-2 mt-md-0">
-                <span class="badge px-3 py-2 fs-6 badge-<?= htmlspecialchars($order['status']) ?>">
-                  Status:
-                  <?= ucfirst(htmlspecialchars($order['status'])) ?>
-                </span>
-                <div class="text-muted small mt-1">Tanggal:
-                  <?= date('d M Y, H:i', strtotime($order['created_at'])) ?>
-                </div>
-              </div>
-            </div>
-
-            <hr>
-
-            <!-- Detail Alamat & Metode -->
-            <div class="row g-4 my-2">
-              <div class="col-md-6">
-                <h6 class="fw-bold text-muted mb-2">Informasi Pengiriman:</h6>
-                <p class="mb-1 fw-bold">
-                  <?= ucfirst(htmlspecialchars($order['shipping_method'])) ?>
+          <!-- Detail Alamat & Metode -->
+          <div class="row g-4 my-2">
+            <div class="col-md-6">
+              <h6 class="fw-bold text-muted mb-2">Informasi Pengiriman:</h6>
+              <p class="mb-1 fw-bold">
+                <?= ucfirst(htmlspecialchars($order['shipping_method'])) ?>
+              </p>
+              <?php if ($order['shipping_method'] === 'diantar'): ?>
+                <p class="mb-1 text-dark"><strong>Penerima:</strong>
+                  <?= htmlspecialchars($order['nama_penerima']) ?> (
+                  <?= htmlspecialchars($order['telepon']) ?>)
                 </p>
-                <?php if ($order['shipping_method'] === 'diantar'): ?>
-                  <p class="mb-1 text-dark"><strong>Penerima:</strong>
-                    <?= htmlspecialchars($order['nama_penerima']) ?> (
-                    <?= htmlspecialchars($order['telepon']) ?>)
-                  </p>
-                  <p class="mb-0 text-muted small">
-                    <?= nl2br(htmlspecialchars($order['alamat_lengkap'])) ?>
-                  </p>
-                <?php else: ?>
-                  <p class="mb-0 text-muted small">Silakan datang langsung ke toko offline BoxKado untuk mengambil pesanan
-                    Anda.</p>
-                <?php endif; ?>
-
-                <?php if (!empty($order['catatan'])): ?>
-                  <div class="mt-2 p-2 bg-light rounded border-start border-3 border-pink small">
-                    <strong>Catatan Kado:</strong> "
-                    <?= htmlspecialchars($order['catatan']) ?>"
-                  </div>
-                <?php endif; ?>
-              </div>
-
-              <div class="col-md-6 text-md-end">
-                <h6 class="fw-bold text-muted mb-2">Metode Pembayaran:</h6>
-                <p class="mb-1 fw-bold" style="color: #ff74a4;">
-                  <?= $order['payment_method'] === 'transfer_bank' ? 'Transfer Bank (Manual)' : 'Dompet Digital (QRIS / E-Wallet)' ?>
+                <p class="mb-0 text-muted small">
+                  <?= nl2br(htmlspecialchars($order['alamat_lengkap'])) ?>
                 </p>
-
-                <!-- Panduan Bayar Dinamis Sesuai Opsi Pilihan User -->
-                <div class="p-3 bg-light rounded text-start d-inline-block w-100 mt-2">
-                  <?php if ($order['payment_method'] === 'transfer_bank'): ?>
-                    <small class="d-block fw-bold text-dark mb-1">Silakan transfer ke rekening resmi kami:</small>
-                    <span class="d-block fs-6 fw-bold text-primary">Bank BCA: 123-4567-890</span>
-                    <small class="text-muted d-block">Atas Nama: BoxKado Official</small>
-                  <?php else: ?>
-                    <small class="d-block fw-bold text-dark mb-2 text-center">Silakan scan QRIS BoxKado:</small>
-                    <div class="text-center">
-                      <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BoxKado-Payment"
-                        alt="QRIS BoxKado" class="img-fluid rounded border p-2 bg-white" style="max-width: 160px;">
-                    </div>
-                    <small class="text-muted text-center d-block mt-2">Bisa di-scan via Dana, GoPay, OVO, ShopeePay, atau
-                      MBanking</small>
-                  <?php endif; ?>
-                </div>
-              </div>
-            </div>
-
-            <!-- Tabel Item Produk -->
-            <div class="table-responsive mt-4">
-              <table class="table align-middle">
-                <thead class="table-light">
-                  <tr>
-                    <th>Produk</th>
-                    <th class="text-center">Harga Satuan</th>
-                    <th class="text-center">Jumlah</th>
-                    <th class="text-end">Subtotal</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <?php while ($item = mysqli_fetch_assoc($items)): ?>
-                    <tr>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <img src="assets/uploads/<?= htmlspecialchars($item['product_image']) ?>"
-                            class="rounded border me-3" style="width: 45px; height: 45px; object-fit: cover;">
-                          <span class="fw-bold text-dark text-truncate" style="max-width: 250px;">
-                            <?= htmlspecialchars($item['product_name']) ?>
-                          </span>
-                        </div>
-                      </td>
-                      <td class="text-center">Rp
-                        <?= number_format($item['price'], 0, ',', '.') ?>
-                      </td>
-                      <td class="text-center">
-                        <?= $item['quantity'] ?>
-                      </td>
-                      <td class="text-end fw-bold">Rp
-                        <?= number_format($item['price'] * $item['quantity'], 0, ',', '.') ?>
-                      </td>
-                    </tr>
-                  <?php endwhile; ?>
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <td colspan="3" class="text-end text-muted border-0 pt-3">Total Harga Barang:</td>
-                    <td class="text-end border-0 pt-3">Rp
-                      <?= number_format($order['total_items_price'], 0, ',', '.') ?>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colspan="3" class="text-end text-muted border-0 py-1">Ongkos Kirim:</td>
-                    <td class="text-end border-0 py-1">
-                      <?= $order['shipping_cost'] > 0 ? 'Rp ' . number_format($order['shipping_cost'], 0, ',', '.') : 'Gratis Ongkir' ?>
-                    </td>
-                  </tr>
-                  <tr class="fs-5 fw-bold">
-                    <td colspan="3" class="text-end border-0 pt-2">Total Pembayaran:</td>
-                    <td class="text-end border-0 pt-2" style="color: #ff74a4;">Rp
-                      <?= number_format($order['grand_total'], 0, ',', '.') ?>
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-
-            <hr class="mt-4">
-
-            <div class="mt-4 p-4 rounded bg-light">
-              <?php if (empty($order['bukti_pembayaran'])): ?>
-                <h5 class="fw-bold text-dark mb-2"><i class="fa fa-upload me-2" style="color: #ff74a4;"></i>Upload Bukti
-                  Pembayaran</h5>
-                <p class="text-muted small">Harap unggah foto atau tangkapan layar (screenshot) resi transfer/bukti bayar
-                  yang sah (Format: JPG, JPEG, PNG, Maks 2MB).</p>
-
-                <form action="upload-payment.php" method="POST" enctype="multipart/form-data" class="mt-3">
-                  <input type="hidden" name="order_id" value="<?= $orderId ?>">
-
-                  <div class="input-group">
-                    <input type="file" name="bukti_bayar" class="form-control" accept="image/*" required>
-                    <button type="submit" class="btn text-white fw-bold px-4" style="background-color: #ff74a4;">
-                      Kirim Bukti
-                    </button>
-                  </div>
-                </form>
               <?php else: ?>
-                <div class="row align-items-center">
-                  <div class="col-md-7 mb-3 mb-md-0">
-                    <h5 class="fw-bold text-success mb-1"><i class="fa fa-check-circle me-2"></i>Bukti Pembayaran Telah
-                      Dikirim</h5>
-                    <p class="text-muted small mb-0">Terima kasih! Bukti transfer Anda sudah terekam di sistem. Admin kami
-                      akan segera melakukan verifikasi data dan mengubah status pesanan Anda.</p>
-                  </div>
-                  <div class="col-md-5 text-md-end">
-                    <small class="d-block text-muted mb-1 font-weight-bold">Preview Bukti Anda:</small>
-                    <a href="assets/uploads/payments/<?= htmlspecialchars($order['bukti_pembayaran']) ?>" target="_blank">
-                      <img src="assets/uploads/payments/<?= htmlspecialchars($order['bukti_pembayaran']) ?>"
-                        class="img-fluid rounded border shadow-sm" style="max-height: 100px; object-fit: cover;">
-                    </a>
-                  </div>
+                <p class="mb-0 text-muted small">Silakan datang langsung ke toko offline BoxKado untuk mengambil pesanan
+                  Anda.</p>
+              <?php endif; ?>
+
+              <?php if (!empty($order['catatan'])): ?>
+                <div class="mt-2 p-2 bg-light rounded border-start border-3 border-pink small">
+                  <strong>Catatan Kado:</strong> "
+                  <?= htmlspecialchars($order['catatan']) ?>"
                 </div>
               <?php endif; ?>
             </div>
 
+            <div class="col-md-6 text-md-end">
+              <h6 class="fw-bold text-muted mb-2">Metode Pembayaran:</h6>
+              <p class="mb-1 fw-bold" style="color: #ff74a4;">
+                <?= $order['payment_method'] === 'transfer_bank' ? 'Transfer Bank (Manual)' : 'Dompet Digital (QRIS / E-Wallet)' ?>
+              </p>
+
+              <!-- Panduan Bayar Dinamis Sesuai Opsi Pilihan User -->
+              <div class="p-3 bg-light rounded text-start d-inline-block w-100 mt-2">
+                <?php if ($order['payment_method'] === 'transfer_bank'): ?>
+                  <small class="d-block fw-bold text-dark mb-1">Silakan transfer ke rekening resmi kami:</small>
+                  <span class="d-block fs-6 fw-bold text-primary">Bank BCA: 123-4567-890</span>
+                  <small class="text-muted d-block">Atas Nama: BoxKado Official</small>
+                <?php else: ?>
+                  <small class="d-block fw-bold text-dark mb-2 text-center">Silakan scan QRIS BoxKado:</small>
+                  <div class="text-center">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BoxKado-Payment"
+                      alt="QRIS BoxKado" class="img-fluid rounded border p-2 bg-white" style="max-width: 160px;">
+                  </div>
+                  <small class="text-muted text-center d-block mt-2">Bisa di-scan via Dana, GoPay, OVO, ShopeePay, atau
+                    MBanking</small>
+                <?php endif; ?>
+              </div>
+            </div>
           </div>
 
-          <div class="text-start mt-4">
-            <a href="product.php" class="btn btn-outline-secondary px-4"><i class="fa fa-arrow-left me-2"></i>Kembali
-              Belanja</a>
+          <!-- Tabel Item Produk -->
+          <div class="table-responsive mt-4">
+            <table class="table align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Produk</th>
+                  <th class="text-center">Harga Satuan</th>
+                  <th class="text-center">Jumlah</th>
+                  <th class="text-end">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php while ($item = mysqli_fetch_assoc($items)): ?>
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <img src="assets/uploads/<?= htmlspecialchars($item['product_image']) ?>"
+                          class="rounded border me-3" style="width: 45px; height: 45px; object-fit: cover;">
+                        <span class="fw-bold text-dark text-truncate" style="max-width: 250px;">
+                          <?= htmlspecialchars($item['product_name']) ?>
+                        </span>
+                      </div>
+                    </td>
+                    <td class="text-center">Rp
+                      <?= number_format($item['price'], 0, ',', '.') ?>
+                    </td>
+                    <td class="text-center">
+                      <?= $item['quantity'] ?>
+                    </td>
+                    <td class="text-end fw-bold">Rp
+                      <?= number_format($item['price'] * $item['quantity'], 0, ',', '.') ?>
+                    </td>
+                  </tr>
+                <?php endwhile; ?>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3" class="text-end text-muted border-0 pt-3">Total Harga Barang:</td>
+                  <td class="text-end border-0 pt-3">Rp
+                    <?= number_format($order['total_items_price'], 0, ',', '.') ?>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="3" class="text-end text-muted border-0 py-1">Ongkos Kirim:</td>
+                  <td class="text-end border-0 py-1">
+                    <?= $order['shipping_cost'] > 0 ? 'Rp ' . number_format($order['shipping_cost'], 0, ',', '.') : 'Gratis Ongkir' ?>
+                  </td>
+                </tr>
+                <tr class="fs-5 fw-bold">
+                  <td colspan="3" class="text-end border-0 pt-2">Total Pembayaran:</td>
+                  <td class="text-end border-0 pt-2" style="color: #ff74a4;">Rp
+                    <?= number_format($order['grand_total'], 0, ',', '.') ?>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <hr class="mt-4">
+
+          <div class="mt-4 p-4 rounded bg-light">
+            <?php if (empty($order['bukti_pembayaran'])): ?>
+              <h5 class="fw-bold text-dark mb-2"><i class="fa fa-upload me-2" style="color: #ff74a4;"></i>Upload Bukti
+                Pembayaran</h5>
+              <p class="text-muted small">Harap unggah foto atau tangkapan layar (screenshot) resi transfer/bukti bayar
+                yang sah (Format: JPG, JPEG, PNG, Maks 2MB).</p>
+
+              <form action="upload-payment.php" method="POST" enctype="multipart/form-data" class="mt-3 mb-0">
+                <input type="hidden" name="order_id" value="<?= $orderId ?>">
+
+                <div class="input-group">
+                  <input type="file" name="bukti_bayar" class="form-control" accept="image/*" required>
+                  <button type="submit" class="btn text-white fw-bold px-4" style="background-color: #ff74a4;">
+                    Kirim Bukti
+                  </button>
+                </div>
+              </form>
+            <?php else: ?>
+              <div class="row align-items-center">
+                <div class="col-md-7 mb-3 mb-md-0">
+                  <h5 class="fw-bold text-success mb-1"><i class="fa fa-check-circle me-2"></i>Bukti Pembayaran Telah
+                    Dikirim</h5>
+                  <p class="text-muted small mb-0">Terima kasih! Bukti transfer Anda sudah terekam di sistem. Admin kami
+                    akan segera melakukan verifikasi data dan mengubah status pesanan Anda.</p>
+                </div>
+                <div class="col-md-5 text-md-end">
+                  <small class="d-block text-muted mb-1 font-weight-bold">Preview Bukti Anda:</small>
+                  <a href="assets/uploads/payments/<?= htmlspecialchars($order['bukti_pembayaran']) ?>" target="_blank">
+                    <img src="assets/uploads/payments/<?= htmlspecialchars($order['bukti_pembayaran']) ?>"
+                      class="img-fluid rounded border shadow-sm" style="max-height: 100px; object-fit: cover;">
+                  </a>
+                </div>
+              </div>
+            <?php endif; ?>
           </div>
 
         </div>
-      </div>
+        <div class="d-flex justify-content-between align-items-center mt-4">
+          <div>
+            <a href="product.php" class="btn btn-outline-secondary px-4">
+              <i class="fa fa-arrow-left me-2"></i>Kembali Belanja
+            </a>
+          </div>
 
+          <div>
+            <?php if ($order['status'] === 'pending' && empty($order['bukti_pembayaran'])): ?>
+              <button type="button" class="btn btn-outline-danger fw-bold px-4" onclick="cancelOrder(<?= $orderId ?>)">
+                <i class="fa fa-times me-2"></i>Batalkan Pesanan Ini
+              </button>
+            <?php endif; ?>
+          </div>
+        </div>
+
+      </div>
     </div>
+
+  </div>
+  </div>
+
+  </div>
   </div>
 
   <!-- Footer -->
@@ -343,11 +379,130 @@ $items = mysqli_stmt_get_result($queryItems);
     </div>
   </div>
 
+  <!-- Modal Konfirmasi Pembatalan Pesanan -->
+  <div class="modal fade" id="cancelConfirmModal" tabindex="-1" aria-labelledby="cancelConfirmModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0">
+          <h5 class="modal-title fw-bold" id="cancelConfirmModalLabel">Batalkan Pesanan?</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center py-4">
+          <div class="text-danger mb-3" style="font-size: 4.5rem; line-height: 1; font-weight: 300;">&times;</div>
+          <p class="fs-5 mb-1 fw-bold text-dark">Apakah Anda yakin ingin membatalkan pesanan ini?</p>
+          <p class="text-muted small mb-0">Aksi ini tidak dapat dibatalkan setelah dieksekusi.</p>
+        </div>
+        <div class="modal-footer border-0 justify-content-center">
+          <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Kembali</button>
+          <button type="button" id="btnDoCancel" class="btn btn-danger px-4">Ya, Batalkan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notifikasi Error Upload Bukti Bayar -->
+  <div class="toast-container position-fixed top-50 start-50 translate-middle p-3" style="z-index: 1060;">
+    <div id="errorToast" class="toast align-items-center text-white bg-danger border-0 shadow-lg" role="alert"
+      aria-live="assertive" aria-atomic="true">
+      <div class="d-flex py-2 px-1">
+        <div class="toast-body fw-bold text-center w-100 fs-6">
+          <?php
+          if (isset($_GET['error']) && $_GET['error'] === 'ext') {
+            echo '<i class="fa fa-exclamation-circle d-block mb-2 fa-2x"></i> Format Salah!<br><small class="fw-normal">Hanya file JPG, JPEG, dan PNG yang diperbolehkan.</small>';
+          } elseif (isset($_GET['error']) && $_GET['error'] === 'size') {
+            echo '<i class="fa fa-exclamation-circle d-block mb-2 fa-2x"></i> File Terlalu Besar!<br><small class="fw-normal">Maksimal ukuran gambar resi adalah 2 MB.</small>';
+          }
+          ?>
+        </div>
+      </div>
+      <div class="text-center pb-2">
+        <button type="button" class="btn btn-sm btn-light fw-bold px-3" data-bs-dismiss="toast">Oke</button>
+      </div>
+    </div>
+  </div>
+
   <!-- JS -->
   <script src="assets/js/jquery.min.js"></script>
   <script src="assets/js/popper.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Menyimpan instance modal secara global agar bisa dikontrol lewat fungsi
+    let cancelModalInstance = null;
 
+    function cancelOrder(orderId) {
+      // 1. Inisialisasi dan tampilkan Bootstrap 5 Modal Konfirmasi
+      const cancelModalElement = document.getElementById('cancelConfirmModal');
+      cancelModalInstance = new bootstrap.Modal(cancelModalElement);
+      cancelModalInstance.show();
+
+      // 2. Ikat aksi klik tombol "Ya, Batalkan" secara dinamis
+      const btnDoCancel = document.getElementById('btnDoCancel');
+
+      // Bersihkan event listener lama dengan trik cloneNode agar tidak double post
+      btnDoCancel.replaceWith(btnDoCancel.cloneNode(true));
+
+      // Ambil kembali elemen tombol yang baru setelah di-clone
+      const freshBtnDoCancel = document.getElementById('btnDoCancel');
+
+      // Tambahkan event klik baru
+      freshBtnDoCancel.addEventListener('click', function () {
+        const formData = new FormData();
+        formData.append('action', 'cancelOrderUser');
+        formData.append('order_id', orderId);
+
+        // Kirim data ke backend via POST ke functions.php
+        fetch('functions.php', {
+          method: 'POST',
+          body: formData
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              // Sembunyikan modal sebelum reload halaman
+              if (cancelModalInstance) {
+                cancelModalInstance.hide();
+              }
+              window.location.reload();
+            } else {
+              alert(data.message);
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan sistem saat membatalkan pesanan.');
+          });
+      });
+    }
+
+    // Pemicu otomatis saat halaman memuat eror dari upload-payment
+    document.addEventListener("DOMContentLoaded", function () {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('error')) {
+        // 1. Buat elemen backdrop gelap secara dinamis
+        const backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        backdrop.style.zIndex = '1055'; // Berada tepat di bawah toast
+        document.body.appendChild(backdrop);
+
+        // 2. Tampilkan Toast
+        const errorToastElement = document.getElementById('errorToast');
+        const toast = new bootstrap.Toast(errorToastElement, {
+          autohide: true,
+          delay: 4000
+        });
+        toast.show();
+
+        // 3. Hapus backdrop secara otomatis saat toast mulai menutup
+        errorToastElement.addEventListener('hidden.bs.toast', function () {
+          backdrop.remove();
+        });
+
+        // Bersihkan parameter (?error) dari URL browser agar rapi
+        window.history.replaceState({}, document.title, window.location.pathname + "?id=" + urlParams.get('id'));
+      }
+    });
+  </script>
 </body>
 
 </html>

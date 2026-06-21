@@ -9,7 +9,7 @@ if (!$user || $_SERVER['REQUEST_METHOD'] !== 'POST') {
   exit;
 }
 
-$orderId = isset($_POST['order_id']) ? (int) $POST['order_id'] : 0;
+$orderId = isset($_POST['order_id']) ? (int) $_POST['order_id'] : 0;
 $userId = (int) $user['id'];
 
 if ($orderId <= 0 || !isset($_FILES['bukti_bayar'])) {
@@ -19,18 +19,18 @@ if ($orderId <= 0 || !isset($_FILES['bukti_bayar'])) {
 
 $file = $_FILES['bukti_bayar'];
 
-// Validasi Gambar Sederhana
+// Validasi Gambar
 $maxFileSize = 2 * 1024 * 1024; // 2MB
 $allowedExtensions = ['jpg', 'jpeg', 'png'];
 $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
 
 if (!in_array($extension, $allowedExtensions, true)) {
-  echo "<script>alert('Hanya file JPG, JPEG, dan PNG yang diperbolehkan.'); window.history.back();</script>";
+  header("Location: invoice.php?id=" . $orderId . "&error=ext");
   exit;
 }
 
 if ($file['size'] > $maxFileSize) {
-  echo "<script>alert('Ukuran gambar maksimal adalah 2 MB.'); window.history.back();</script>";
+  header("Location: invoice.php?id=" . $orderId . "&error=size");
   exit;
 }
 

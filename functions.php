@@ -216,12 +216,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     deleteproduct($id);
 } else if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'addToCart') {
     addToCart();
-    // Tambahkan baris ini di area if-else routing POST functions.php Anda
 } else if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'updateCartQty') {
     updateCartQty();
-    // Tambahkan baris ini di area if-else routing POST functions.php Anda
 } else if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'deleteCartItem') {
     deleteCartItemAction();
+} else if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'cancelOrderUser') {
+    cancelOrderUserAction();
 }
 
 function register()
@@ -799,6 +799,63 @@ function deleteCartItemAction()
         echo json_encode(['success' => true, 'message' => 'Produk berhasil dihapus dari keranjang.']);
     } else {
         echo json_encode(['success' => false, 'message' => 'Gagal menghapus produk dari database.']);
+    }
+    exit;
+}
+
+function cancelOrderUserAction()
+{
+    global $conn;
+
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
+
+    $user = $_SESSION['user'] ?? null;
+    if (!$user) {
+        echo json_encode(['success' => false, 'message' => 'Sesi Anda telah berakhir.']);
+        exit;
+    }
+
+    $orderId = (int) $_POST['order_id'];
+    $userId = (int) $user['id'];
+
+    if ($orderId <= 0) {
+        echo json_encode(['success' => false, 'message' => 'ID Pesanan tidak valid.']);
+        exit;
+    }
+
+    // PENTING: Validasi keamanan berlapis.
+    // Pesanan hanya boleh dibatalkan jika milik user yang login, statusnya masih 'pending', DAN belum ada bukti_pembayaran.
+    $checkQuery = mysqli_prepare($conn, "SELECT status, bukti_pembayaran FROM orders WHERE id = ? AND user_id = ?");
+    mysqli_stmt_bind_param($checkQuery, 'ii', $orderId, $userId);
+    mysqli_stmt_execute($checkQuery);
+    $result = mysqli_stmt_get_result($checkQuery);
+    $order = mysqli_fetch_assoc($result);
+
+    if (!$order) {
+        echo json_encode(['success' => false, 'message' => 'Pesanan tidak ditemukan.']);
+        exit;
+    }
+
+    if ($order['status'] !== 'pending') {
+        echo json_encode(['success' => false, 'message' => 'Pesanan tidak dapat dibatalkan karena sedang diproses atau sudah selesai.']);
+        exit;
+    }
+
+    if (!empty($order['bukti_pembayaran'])) {
+        echo json_encode(['success' => false, 'message' => 'Pesanan tidak dapat dibatalkan karena bukti pembayaran sudah dikirim.']);
+        exit;
+    }
+
+    // Jika lolos semua validasi, ubah status menjadi 'dibatalkan'
+    $updateQuery = mysqli_prepare($conn, "UPDATE orders SET status = 'dibatalkan' WHERE id = ? AND user_id = ?");
+    mysqli_stmt_bind_param($updateQuery, 'ii', $orderId, $userId);
+
+    if (mysqli_stmt_execute($updateQuery)) {
+        echo json_encode(['success' => true, 'message' => 'Pesanan berhasil dibatalkan.']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Gagal memperbarui status di database.']);
     }
     exit;
 }
