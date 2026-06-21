@@ -102,6 +102,9 @@ $total = 0;
             <li class="nav-item active">
               <a class="nav-link" href="cart.php">Keranjang</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="orders.php">Pesanan Saya</a>
+            </li>
           </ul>
 
           <ul class="navbar-nav ml-lg-auto align-items-lg-center">
