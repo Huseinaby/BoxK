@@ -16,10 +16,10 @@ $csrfToken = csrfToken();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BoxKado</title>
-    <!-- fevicon -->
+    <title>BoxKado - Kelola Kategori</title>
     <link rel="icon" href="../assets/images/boxkado-icon.png" type="image/gif" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         body {
@@ -71,7 +71,8 @@ $csrfToken = csrfToken();
 
         .card {
             border: none;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05);
+            border-radius: 12px;
         }
 
         @media (max-width: 768px) {
@@ -101,10 +102,12 @@ $csrfToken = csrfToken();
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa fa-user-shield me-1"></i>
                             <?= htmlspecialchars($user['username'], ENT_QUOTES, 'UTF-8') ?>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="logout.php">Logout</a></li>
+                            <li><a class="dropdown-item text-danger" href="logout.php"><i
+                                        class="fa fa-sign-out-alt me-1"></i> Logout</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -113,73 +116,93 @@ $csrfToken = csrfToken();
     </nav>
     <div class="d-flex">
         <div class="sidebar">
-            <a href="dashboard.php">Dashboard</a>
-            <a href="category.php">Kategori</a>
-            <a href="product.php">Produk</a>
-            <a href="orders.php">Pesanan</a>
+            <a href="dashboard.php"><i class="fa fa-tachometer-alt me-2"></i> Dashboard</a>
+            <a href="category.php" style="background-color: rgba(0,0,0,0.1); font-weight: bold;"><i
+                    class="fa fa-tags me-2"></i> Kategori</a>
+            <a href="product.php"><i class="fa fa-gift me-2"></i> Produk</a>
+            <a href="orders.php"><i class="fa fa-shopping-cart me-2"></i> Pesanan</a>
         </div>
+
         <div class="content container">
-            <h2 class="mt-4">Kategori</h2>
-            <button class="btn" style="background-color: #ff74a4; color: white; margin-bottom: 15px;"
-                data-bs-toggle="modal" data-bs-target="#addCategoryModal">Tambah Kategori</button>
-            <div class="card p-4">
-                <table class="table table-bordered table-responsive text-center">
-                    <thead class="table-light">
-                        <tr>
-                            <th>No</th>
-                            <th>Nama Kategori</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (!empty($categories)): ?>
-                            <?php $no = 1;
-                            ?>
-                            <?php foreach ($categories as $category): ?>
+            <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+                <div>
+                    <h2 class="fw-bold text-dark mb-0">Kelola Kategori</h2>
+                    <p class="text-muted small mb-0">Kelompokkan produk kado agar pembeli lebih mudah menjelajah.</p>
+                </div>
+                <button class="btn fw-bold px-3 text-white" style="background-color: #ff74a4;" data-bs-toggle="modal"
+                    data-bs-target="#addCategoryModal">
+                    <i class="fa fa-plus-circle me-1"></i> Tambah Kategori
+                </button>
+            </div>
+
+            <div class="card p-4 bg-white">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="10%" class="text-center">No</th>
+                                <th class="text-start">Nama Kategori</th>
+                                <th width="20%" class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($categories)): ?>
+                                <?php $no = 1; ?>
+                                <?php foreach ($categories as $category): ?>
+                                    <tr>
+                                        <td class="text-center fw-bold text-secondary"><?= $no++ ?></td>
+                                        <td class="text-start fw-bold text-dark"><?= htmlspecialchars($category['name']) ?></td>
+                                        <td class="text-center">
+                                            <button class="btn btn-outline-danger btn-sm px-3 fw-bold"
+                                                onclick="deleteCategory(<?= $category['id'] ?>)">
+                                                <i class="fa fa-trash-alt me-1"></i> Haps
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
                                 <tr>
-                                    <td><?= $no++ ?></td>
-                                    <td><?= htmlspecialchars($category['name']) ?></td>
-                                    <td>
-                                        <button class="btn btn-danger btn-sm"
-                                            onclick="deleteCategory(<?= $category['id'] ?>)">Hapus</button>
+                                    <td colspan="3" class="text-center text-muted py-4">
+                                        <i class="fa fa-folder-open fa-2x d-block mb-2 text-black-50"></i>
+                                        Tidak ada kategori tersedia.
                                     </td>
                                 </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="3" class="text-center text-muted">Tidak ada kategori tersedia</td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel"
         aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addCategoryModalLabel">Tambah Kategori</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header" style="background-color: #ff94c4; color: white;">
+                    <h5 class="modal-title fw-bold" id="addCategoryModalLabel"><i class="fa fa-tags me-2"></i>Tambah
+                        Kategori Baru</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body p-4">
                     <form id="categoryForm">
                         <div class="mb-3">
-                            <label for="name" class="form-label">Nama Kategori</label>
-                            <input type="text" class="form-control" id="name" placeholder="Masukkan nama kategori"
-                                autocomplete="off">
+                            <label for="name" class="form-label small fw-bold">Nama Kategori</label>
+                            <input type="text" class="form-control" id="name"
+                                placeholder="Misal: Buket, Kotak Kayu, Acrylic" autocomplete="off" required>
                         </div>
-                        <button type="submit" class="btn"
-                            style="background-color: #ff74a4; color: white;">Simpan</button>
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn text-white fw-bold"
+                                style="background-color: #ff74a4;">Simpan</button>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Add SweetAlert2 CDN -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
@@ -202,6 +225,7 @@ $csrfToken = csrfToken();
             });
         }
 
+        // Penyelarasan warna konfirmasi sukses ke pink #ff94c4
         function showSuccessAndReload(title, message) {
             Swal.fire({
                 icon: 'success',
@@ -216,7 +240,6 @@ $csrfToken = csrfToken();
         $(document).ready(function () {
             $("#categoryForm").submit(function (e) {
                 e.preventDefault();
-
                 var name = $("#name").val();
 
                 $.ajax({
@@ -229,16 +252,14 @@ $csrfToken = csrfToken();
                     },
                     success: function (response) {
                         var data = parseJsonResponse(response);
-
                         if (!data) {
                             showAlert('error', 'Error', 'Format respons tidak valid.');
                             return;
                         }
-
                         if (data.success) {
-                            showSuccessAndReload('Success', data.message);
+                            showSuccessAndReload('Berhasil', data.message);
                         } else {
-                            showAlert('error', 'Error', data.message);
+                            showAlert('error', 'Gagal', data.message);
                         }
                     },
                     error: function (xhr, status, error) {
@@ -251,7 +272,7 @@ $csrfToken = csrfToken();
         function deleteCategory(categoryId) {
             Swal.fire({
                 title: 'Apakah Anda yakin?',
-                text: 'Data ini tidak dapat dikembalikan setelah dihapus!',
+                text: 'Menghapus kategori ini dapat memengaruhi produk yang terikat di dalamnya!',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Ya, hapus!',
@@ -270,12 +291,10 @@ $csrfToken = csrfToken();
                         },
                         success: function (response) {
                             var data = parseJsonResponse(response);
-
                             if (!data) {
                                 showAlert('error', 'Terjadi Kesalahan', 'Format respons tidak valid.');
                                 return;
                             }
-
                             if (data.success) {
                                 showSuccessAndReload('Kategori Dihapus', data.message);
                             } else {
@@ -283,7 +302,6 @@ $csrfToken = csrfToken();
                             }
                         },
                         error: function (xhr, status, error) {
-                            console.log('Error:', error);
                             showAlert('error', 'Oops...', 'Terjadi kesalahan saat menghapus kategori.');
                         }
                     });
