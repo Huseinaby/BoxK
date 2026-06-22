@@ -157,6 +157,9 @@ $products = getProductLimit();
                                         <p><strong>Kategori:</strong> <?= htmlspecialchars($product['category']) ?></p>
                                         <p><strong>Harga:</strong> Rp <?= number_format($product['price'], 0, ',', '.') ?>
                                         </p>
+
+                                        <p><strong>Stok Tersedia:</strong> <?= (int) $product['stock'] ?> pcs</p>
+
                                         <p><strong>Status:</strong>
                                             <span
                                                 class="badge bg-<?= $product['status'] === 'tersedia' ? 'success' : 'danger' ?>">
@@ -248,16 +251,15 @@ $products = getProductLimit();
             })
                 .then(response => response.json())
                 .then(data => {
+                    const toastElement = document.getElementById('successToast');
+
                     if (data.success) {
-                        // 1. Masukkan teks pesan dari backend ke dalam komponen Toast
-                        document.getElementById('toastMessage').innerText = data.message;
+                        // 1. Tampilan jika BERHASIL: Set warna pink khas BoxKado (#ff74a4)
+                        toastElement.style.backgroundColor = '#ff74a4';
 
-                        // 2. Inisialisasi dan munculkan Bootstrap Toast
-                        const toastElement = document.getElementById('successToast');
-                        const toast = new bootstrap.Toast(toastElement, { delay: 3000 }); // Otomatis hilang dalam 3 detik
-                        toast.show();
+                        document.getElementById('toastMessage').innerHTML = `<i class="fa fa-check-circle me-2"></i> ${data.message}`;
 
-                        // 3. Sembunyikan modal produk jika sedang terbuka
+                        // Sembunyikan modal produk jika sedang terbuka
                         const modalElement = document.getElementById(`productModal${productId}`);
                         if (modalElement) {
                             const modalInstance = bootstrap.Modal.getInstance(modalElement);
@@ -266,22 +268,33 @@ $products = getProductLimit();
                             }
                         }
                     } else {
-                        // Jika gagal (misal belum login), Anda bisa tetap pakai alert biasa atau buat toast warna merah
-                        alert(data.message);
+                        // 2. Tampilan jika GAGAL (Stok Habis / Belum Login): Set warna merah tegas (#dc3545)
+                        toastElement.style.backgroundColor = '#dc3545';
+
+                        document.getElementById('toastMessage').innerHTML = `<i class="fa fa-exclamation-triangle me-2"></i> ${data.message}`;
                     }
+
+                    // 3. Inisialisasi dan memunculkan Toast kustom di layar
+                    const toast = new bootstrap.Toast(toastElement, { delay: 4000 }); // Tampil selama 4 detik
+                    toast.show();
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Terjadi kesalahan sistem');
+                    // Fallback jika sistem crash total
+                    const toastElement = document.getElementById('successToast');
+                    toastElement.style.backgroundColor = '#dc3545';
+                    document.getElementById('toastMessage').innerHTML = `<i class="fa fa-times-circle me-2"></i> Terjadi kesalahan sistem.`;
+                    const toast = new bootstrap.Toast(toastElement, { delay: 4000 });
+                    toast.show();
                 });
         }
     </script>
 
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
-        <div id="successToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive"
-            aria-atomic="true" style="background-color: #ff74a4;">
-            <div class="d-flex">
-                <div class="toast-body fw-bold">
+        <div id="successToast" class="toast align-items-center text-white border-0 shadow-lg" role="alert"
+            aria-live="assertive" aria-atomic="true">
+            <div class="d-flex py-1">
+                <div class="toast-body fw-bold fs-6">
                     <span id="toastMessage"></span>
                 </div>
                 <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast"
