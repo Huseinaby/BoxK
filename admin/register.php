@@ -92,20 +92,26 @@ if (isset($_SESSION['user'])) {
                         <form id="registerForm" method="POST">
                             <div class="mb-3">
                                 <label for="username" class="form-label">Username</label>
-                                <input type="text" class="form-control" id="username" name="username" autocomplete="off">
+                                <input type="text" class="form-control" id="username" name="username"
+                                    autocomplete="off">
                             </div>
                             <div class="mb-3">
                                 <label for="password" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="password" name="password" autocomplete="off">
+                                <input type="password" class="form-control" id="password" name="password"
+                                    autocomplete="off">
                             </div>
                             <div class="mb-3">
                                 <label for="confirmPassword" class="form-label">Konfirmasi</label>
-                                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" autocomplete="off">
+                                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword"
+                                    autocomplete="off">
                             </div>
                             <button type="submit" class="btn btn-register">Daftar</button>
                         </form>
                         <div class="login-link">
                             <p>Sudah memiliki akun? <a href="index.php">Login</a></p>
+                            <a href="../index.php" class="text-muted small d-block mt-3">
+                                <i class="fa fa-arrow-left me-1"></i> Kembali ke Beranda
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -125,8 +131,8 @@ if (isset($_SESSION['user'])) {
     <!-- Add SweetAlert2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        $(document).ready(function() {
-            $("#registerForm").submit(function(e) {
+        $(document).ready(function () {
+            $("#registerForm").submit(function (e) {
                 e.preventDefault();
 
                 var username = $("#username").val();
@@ -151,7 +157,7 @@ if (isset($_SESSION['user'])) {
                         username: username,
                         password: password
                     },
-                    success: function(response) {
+                    success: function (response) {
                         var data = JSON.parse(response);
 
                         if (data.success) {
@@ -160,7 +166,7 @@ if (isset($_SESSION['user'])) {
                                 title: 'Success',
                                 text: data.message,
                                 confirmButtonColor: '#ff94c4'
-                            }).then(function() {
+                            }).then(function () {
                                 window.location.href = "register.php";
                             });
                         } else {
@@ -172,7 +178,7 @@ if (isset($_SESSION['user'])) {
                             });
                         }
                     },
-                    error: function(xhr, status, error) {
+                    error: function (xhr, status, error) {
                         Swal.fire({
                             icon: 'error',
                             title: 'Terjadi Kesalahan',
