@@ -2,6 +2,9 @@
 session_start();
 require '../functions.php';
 
+// Proteksi halaman admin
+requireAdminAccess();
+
 // 1. Proteksi Halaman Admin
 $user = $_SESSION['user'] ?? null;
 if (!$user) {
@@ -261,7 +264,8 @@ $queryDetails = mysqli_query($conn, "
                       <td class="text-center small text-muted">Rp <?= number_format($item['price'], 0, ',', '.') ?></td>
                       <td class="text-center small fw-bold text-dark"><?= $item['quantity'] ?></td>
                       <td class="text-end small fw-bold text-dark">Rp
-                        <?= number_format($item['price'] * $item['quantity'], 0, ',', '.') ?></td>
+                        <?= number_format($item['price'] * $item['quantity'], 0, ',', '.') ?>
+                      </td>
                     </tr>
                   <?php endwhile; ?>
                 </tbody>
