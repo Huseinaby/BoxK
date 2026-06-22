@@ -34,6 +34,7 @@ $user = $_SESSION['user'] ?? null;
     <link rel="stylesheet" href="assets/css/jquery.mCustomScrollbar.min.css">
     <!-- Tweaks for older IEs-->
     <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
@@ -57,30 +58,38 @@ $user = $_SESSION['user'] ?? null;
                         <li class="nav-item active">
                             <a class="nav-link" href="aboutme.php">Tentang Kami</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="cart.php">Keranjang</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="orders.php">Pesanan Saya</a>
-                        </li>
+
+                        <?php if ($user): ?>
+                            <li class="nav-item">
+                                <a class="nav-link" href="cart.php">Keranjang</a>
+                            </li>
+                        <?php endif; ?>
                     </ul>
+
                     <ul class="navbar-nav ml-lg-auto align-items-lg-center">
                         <?php if ($user): ?>
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                    data-toggle="dropdown" aria-expanded="false">
-                                    <?= htmlspecialchars($user['username']) ?>
+                                <a class="nav-link dropdown-toggle fw-bold text-dark" href="#" id="userDropdown"
+                                    role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fa fa-user-circle mr-2"></i> <?= htmlspecialchars($user['username']) ?>
                                 </a>
-                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
-                                    <a class="dropdown-item" href="admin/logout.php">Logout</a>
-                                </div>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 animate fade-In"
+                                    aria-labelledby="userDropdown">
+                                    <li><a class="dropdown-item py-2" href="orders.php"><i class="fa fa-shopping-bag mr-2"
+                                                style="color: #ff74a4;"></i>Pesanan Saya</a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li><a class="dropdown-item py-2 text-danger" href="admin/logout.php"><i
+                                                class="fa fa-sign-out mr-2"></i>Logout</a></li>
+                                </ul>
                             </li>
                         <?php else: ?>
                             <li class="nav-item">
-                                <a class="nav-link" href="admin/index.php">Login</a>
+                                <a class="nav-link fw-bold" href="admin/index.php">Login</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="admin/register.php">Daftar</a>
+                                <a class="nav-link fw-bold" href="admin/register.php">Daftar</a>
                             </li>
                         <?php endif; ?>
                     </ul>
@@ -134,12 +143,10 @@ $user = $_SESSION['user'] ?? null;
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/popper.min.js"></script>
     <script src="assets/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <script src="assets/js/jquery-3.0.0.min.js"></script>
     <script src="assets/js/plugin.js"></script>
-    <!-- sidebar -->
-    <script src="assets/js/jquery.mCustomScrollbar.concat.min.js"></script>
-    <script src="assets/js/custom.js"></script>
-    <!-- javascript -->
 </body>
 
 </html>

@@ -38,6 +38,7 @@ $products = getProductLimit();
     <link rel="stylesheet" href="assets/css/jquery.mCustomScrollbar.min.css">
     <!-- Tweaks for older IEs-->
     <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
@@ -61,32 +62,38 @@ $products = getProductLimit();
                         <li class="nav-item">
                             <a class="nav-link" href="aboutme.php">Tentang Kami</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="cart.php">Keranjang</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="orders.php">Pesanan Saya</a>
-                        </li>
+
+                        <?php if ($user): ?>
+                            <li class="nav-item">
+                                <a class="nav-link" href="cart.php">Keranjang</a>
+                            </li>
+                        <?php endif; ?>
                     </ul>
+
                     <ul class="navbar-nav ml-lg-auto align-items-lg-center">
                         <?php if ($user): ?>
                             <li class="nav-item dropdown">
-                                <!-- Ubah data-toggle menjadi data-bs-toggle -->
-                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                    <?= htmlspecialchars($user['username']) ?>
+                                <a class="nav-link dropdown-toggle fw-bold text-dark" href="#" id="userDropdown"
+                                    role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fa fa-user-circle me-1"></i> <?= htmlspecialchars($user['username']) ?>
                                 </a>
-                                <!-- Di Bootstrap 5, dropdown-menu-right diubah menjadi dropdown-menu-end -->
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                    <li><a class="dropdown-item" href="admin/logout.php">Logout</a></li>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 animate fade-In"
+                                    aria-labelledby="userDropdown">
+                                    <li><a class="dropdown-item py-2" href="orders.php"><i class="fa fa-shopping-bag me-2"
+                                                style="color: #ff74a4;"></i>Pesanan Saya</a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li><a class="dropdown-item py-2 text-danger" href="admin/logout.php"><i
+                                                class="fa fa-sign-out me-2"></i>Logout</a></li>
                                 </ul>
                             </li>
                         <?php else: ?>
                             <li class="nav-item">
-                                <a class="nav-link" href="admin/index.php">Login</a>
+                                <a class="nav-link fw-bold" href="admin/index.php">Login</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="admin/register.php">Daftar</a>
+                                <a class="nav-link fw-bold" href="admin/register.php">Daftar</a>
                             </li>
                         <?php endif; ?>
                     </ul>
