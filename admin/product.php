@@ -117,6 +117,7 @@ $csrfToken = csrfToken();
             <a href="dashboard.php">Dashboard</a>
             <a href="category.php">Kategori</a>
             <a href="product.php">Produk</a>
+            <a href="orders.php">Pesanan</a>
         </div>
         <div class="content container">
             <h2 class="mt-4">Produk</h2>
