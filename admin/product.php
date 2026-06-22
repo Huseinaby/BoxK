@@ -17,8 +17,7 @@ $csrfToken = csrfToken();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BoxKado</title>
-    <!-- fevicon -->
+    <title>BoxKado - Kelola Produk</title>
     <link rel="icon" href="../assets/images/boxkado-icon.png" type="image/gif" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -148,14 +147,14 @@ $csrfToken = csrfToken();
                                 alt="<?= htmlspecialchars($product['name']) ?>">
                             <div class="card-body">
                                 <h5 class="card-title"><?= htmlspecialchars($product['name']) ?></h5>
-                                <p class="card-text" style="color: #ff74a4; font-weight: bold;">
+                                <p class="card-text mb-1" style="color: #ff74a4; font-weight: bold;">
                                     Rp <?= number_format($product['price'], 0, ',', '.') ?>
                                 </p>
+                                <small class="text-muted d-block">Stok: <?= (int)$product['stock'] ?></small>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Modal Detail Produk -->
                     <div class="modal fade" id="productModal<?= $product['id'] ?>" tabindex="-1"
                         aria-labelledby="productModalLabel<?= $product['id'] ?>" aria-hidden="true">
                         <div class="modal-dialog">
@@ -176,6 +175,7 @@ $csrfToken = csrfToken();
                                     <p><strong>Ukuran:</strong> <?= htmlspecialchars($product['size']) ?></p>
                                     <p><strong>Kategori:</strong> <?= htmlspecialchars($product['category'] ?? '-') ?></p>
                                     <p><strong>Harga:</strong> Rp <?= number_format($product['price'], 0, ',', '.') ?></p>
+                                    <p><strong>Jumlah Stok:</strong> <?= (int)$product['stock'] ?> pcs</p>
                                     <p><strong>Status:</strong>
                                         <span
                                             class="badge bg-<?= $product['status'] === 'tersedia' ? 'success' : 'danger' ?>">
@@ -195,7 +195,6 @@ $csrfToken = csrfToken();
                         </div>
                     </div>
 
-                    <!-- Modal Edit Produk -->
                     <div class="modal fade" id="editProductModal<?= $product['id'] ?>" tabindex="-1"
                         aria-labelledby="editProductModalLabel<?= $product['id'] ?>" aria-hidden="true">
                         <div class="modal-dialog">
@@ -226,6 +225,12 @@ $csrfToken = csrfToken();
                                             <label class="form-label">Harga</label>
                                             <input type="number" name="editPrice" id="editPrice<?= $product['id'] ?>"
                                                 class="form-control editPrice" value="<?= $product['price'] ?>" required>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Jumlah Stok</label>
+                                            <input type="number" name="editStock" id="editStock<?= $product['id'] ?>"
+                                                class="form-control editStock" value="<?= (int)$product['stock'] ?>" min="0" required>
                                         </div>
 
                                         <div class="mb-3">
@@ -336,6 +341,11 @@ $csrfToken = csrfToken();
                                 placeholder="Masukkan harga">
                         </div>
                         <div class="mb-3">
+                            <label for="productStock" class="form-label">Jumlah Stok Awal</label>
+                            <input type="number" class="form-control" id="productStock" name="productStock"
+                                placeholder="Masukkan jumlah stok awal kado" min="0" value="0">
+                        </div>
+                        <div class="mb-3">
                             <label for="productStatus" class="form-label">Status</label>
                             <select class="form-control" id="productStatus" name="productStatus">
                                 <option value="tersedia">Tersedia</option>
@@ -354,7 +364,6 @@ $csrfToken = csrfToken();
         </div>
     </div>
 
-    <!-- Add SweetAlert2 CDN -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
@@ -400,6 +409,7 @@ $csrfToken = csrfToken();
             }
         }
 
+        // 4. UPDATE JAVASCRIPT: Sisipkan variabel data stok ke FormData AJAX
         function buildEditProductFormData(formElement) {
             var $form = $(formElement);
             var fileInput = $form.find('.editImage')[0];
@@ -411,6 +421,7 @@ $csrfToken = csrfToken();
             formData.append('productName', $form.find('.editName').val());
             formData.append('productDesc', $form.find('.editAbout').val());
             formData.append('productPrice', $form.find('.editPrice').val());
+            formData.append('productStock', $form.find('.editStock').val()); // Injeksi nilai editStock
             formData.append('productColor', $form.find('.editColor').val());
             formData.append('productSize', $form.find('.editSize').val());
             formData.append('productCategory', $form.find('.editCategory').val());
@@ -434,14 +445,15 @@ $csrfToken = csrfToken();
                 var productSize = $('#productSize').val();
                 var productCategory = $('#productCategory').val();
                 var productPrice = $('#productPrice').val();
+                var productStock = $('#productStock').val(); // Tangkap nilai input stok baru
                 var productStatus = $('#productStatus').val();
                 var productImage = $('#productImage')[0].files[0];
 
-                if (!productName || !productAbout || !productColor || !productSize || !productCategory || !productPrice || !productStatus || !productImage) {
+                if (!productName || !productAbout || !productColor || !productSize || !productCategory || !productPrice || !productStock || !productStatus || !productImage) {
                     Swal.fire({
                         icon: 'error',
                         title: 'Oops...',
-                        text: 'Semua kolom harus diisi!',
+                        text: 'Semua kolom termasuk Jumlah Stok harus diisi!',
                         confirmButtonColor: '#ff94c4'
                     });
                     return;
@@ -455,6 +467,7 @@ $csrfToken = csrfToken();
                 formData.append('productSize', productSize);
                 formData.append('productCategory', productCategory);
                 formData.append('productPrice', productPrice);
+                formData.append('productStock', productStock); // Injeksi nilai productStock ke AJAX
                 formData.append('productStatus', productStatus);
                 formData.append('productImage', productImage);
                 formData.append('csrf_token', csrfToken);
@@ -492,11 +505,12 @@ $csrfToken = csrfToken();
                 var productName = $(this).find('.editName').val();
                 var productDesc = $(this).find('.editAbout').val();
                 var productPrice = $(this).find('.editPrice').val();
+                var productStock = $(this).find('.editStock').val(); // Validasi input stok edit
                 var productCategory = $(this).find('.editCategory').val();
                 var productStatus = $(this).find('.editStatus').val();
 
-                if (!productName || !productDesc || !productPrice || !productCategory || !productStatus) {
-                    showError('All fields are required!');
+                if (!productName || !productDesc || !productPrice || !productStock || !productCategory || !productStatus) {
+                    showError('Semua kolom wajib diisi!');
                     return;
                 }
 
@@ -520,7 +534,7 @@ $csrfToken = csrfToken();
                         if (data.success) {
                             Swal.fire({
                                 icon: 'success',
-                                title: 'Success',
+                                title: 'Berhasil',
                                 text: data.message
                             }).then(function () {
                                 closeModal(modalId);
@@ -532,7 +546,7 @@ $csrfToken = csrfToken();
                     },
                     error: function (xhr, status, error) {
                         console.log('Error:', error);
-                        showError('An error occurred. Please try again.');
+                        showError('Terjadi kesalahan sistem, silakan coba lagi.');
                     }
                 });
             });

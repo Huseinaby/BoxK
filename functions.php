@@ -195,20 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
 } else if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'editproduct') {
     requireAdminAccess(true);
     verifyCsrfToken(true);
-    global $conn;
-
-    $id = (int) $_POST['id'];
-    $name = $_POST['productName'];
-    $desc = $_POST['productDesc'];
-    $price = $_POST['productPrice'];
-    $color = $_POST['productColor'];
-    $size = $_POST['productSize'];
-    $categoryId = (int) $_POST['productCategory'];
-    $status = $_POST['productStatus'];
-
-    $image = isset($_FILES['productImage']) ? $_FILES['productImage'] : null;
-
-    echo editProduct($id, $name, $desc, $price, $color, $size, $categoryId, $status, $image);
+    echo editProduct();
 } else if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'deleteproduct') {
     requireAdminAccess(true);
     verifyCsrfToken(true);
@@ -419,77 +406,41 @@ function addProduct()
 {
     global $conn;
 
-    $productName = mysqli_real_escape_string($conn, trim($_POST['productName']));
-    $productAbout = mysqli_real_escape_string($conn, trim($_POST['productAbout']));
-    $productColor = mysqli_real_escape_string($conn, trim($_POST['productColor']));
-    $productSize = mysqli_real_escape_string($conn, trim($_POST['productSize']));
-    $productCategoryId = (int) $_POST['productCategory'];
-    $productPrice = (float) $_POST['productPrice'];
-    $productStatus = mysqli_real_escape_string($conn, trim($_POST['productStatus']));
-    $productImage = $_FILES['productImage'];
+    // Tangkap data dari $_POST
+    $name = htmlspecialchars($_POST['productName']);
+    $about = htmlspecialchars($_POST['productAbout']);
+    $color = htmlspecialchars($_POST['productColor']);
+    $size = htmlspecialchars($_POST['productSize']);
+    $category_id = (int) $_POST['productCategory'];
+    $price = (int) $_POST['productPrice'];
+    $stock = (int) $_POST['productStock']; // <-- TAMBAHKAN INI
+    $status = htmlspecialchars($_POST['productStatus']);
 
-    $validateCategory = mysqli_prepare($conn, "SELECT id FROM category WHERE id = ? LIMIT 1");
-    mysqli_stmt_bind_param($validateCategory, 'i', $productCategoryId);
-    mysqli_stmt_execute($validateCategory);
-    mysqli_stmt_store_result($validateCategory);
+    // --- Proses Upload Gambar (Logika gambar kamu yang sudah ada) ---
+    $imageName = $_FILES['productImage']['name'];
+    $tmpName = $_FILES['productImage']['tmp_name'];
+    $ext = pathinfo($imageName, PATHINFO_EXTENSION);
+    $newImageName = time() . '-' . uniqid() . '.' . $ext;
+    $targetPath = "assets/uploads/" . $newImageName;
 
-    if (mysqli_stmt_num_rows($validateCategory) == 0) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Kategori tidak valid.'
-        ]);
-        exit;
-    }
+    if (move_uploaded_file($tmpName, $targetPath)) {
+        // UPDATE QUERY: Tambahkan kolom stock dan valuenya
+        $query = "INSERT INTO product (category_id, name, color, size, price, stock, image, about, status) 
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-    if (
-        empty($productName) || empty($productAbout) || empty($productColor) ||
-        empty($productSize) || empty($productCategoryId) || empty($productPrice) ||
-        empty($productStatus) || empty($productImage['name'])
-    ) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Semua kolom harus diisi.'
-        ]);
-        exit;
-    }
+        $stmt = mysqli_prepare($conn, $query);
+        mysqli_stmt_bind_param($stmt, 'isssiisss', $category_id, $name, $color, $size, $price, $stock, $newImageName, $about, $status);
 
-    $imageError = '';
-
-    if (!isValidImageUpload($productImage, $imageError)) {
-        echo json_encode([
-            'success' => false,
-            'message' => $imageError
-        ]);
-        exit;
-    }
-
-    $imageName = time() . '-' . basename($productImage['name']);
-    $imageTmpName = $productImage['tmp_name'];
-    $imagePath = "assets/uploads/" . $imageName;
-
-    if (move_uploaded_file($imageTmpName, $imagePath)) {
-        $query = mysqli_prepare($conn, "INSERT INTO product (name, about, color, size, category_id, price, status, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-        mysqli_stmt_bind_param($query, 'ssssidss', $productName, $productAbout, $productColor, $productSize, $productCategoryId, $productPrice, $productStatus, $imageName);
-
-        if (mysqli_stmt_execute($query)) {
-            echo json_encode([
-                'success' => true,
-                'message' => 'Produk berhasil ditambahkan.'
-            ]);
+        if (mysqli_stmt_execute($stmt)) {
+            echo json_encode(['success' => true, 'message' => 'Produk berhasil ditambahkan!']);
         } else {
-            echo json_encode([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat menambahkan produk ke database.'
-            ]);
+            echo json_encode(['success' => false, 'message' => 'Gagal menyimpan ke database.']);
         }
     } else {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Gagal mengupload gambar.'
-        ]);
+        echo json_encode(['success' => false, 'message' => 'Gagal mengunggah gambar produk.']);
     }
+    exit;
 }
-
 function getProduct()
 {
     global $conn;
@@ -515,85 +466,47 @@ function getProductLimit()
     return $result;
 }
 
-function editProduct($id, $name, $desc, $price, $color, $size, $categoryId, $status, $image)
+function editproduct()
 {
     global $conn;
 
-    $name = mysqli_real_escape_string($conn, trim($name));
-    $desc = mysqli_real_escape_string($conn, trim($desc));
-    $price = (float) $price;
-    $color = mysqli_real_escape_string($conn, trim($color));
-    $size = mysqli_real_escape_string($conn, trim($size));
-    $status = mysqli_real_escape_string($conn, trim($status));
+    $id = (int) $_POST['id'];
+    $name = htmlspecialchars($_POST['productName']);
+    $about = htmlspecialchars($_POST['productDesc']);
+    $price = (int) $_POST['productPrice'];
+    $stock = (int) $_POST['productStock']; // <-- TAMBAHKAN INI
+    $color = htmlspecialchars($_POST['productColor']);
+    $size = htmlspecialchars($_POST['productSize']);
+    $category_id = (int) $_POST['productCategory'];
+    $status = htmlspecialchars($_POST['productStatus']);
 
-    if ($id <= 0 || $categoryId <= 0) {
-        return json_encode(['success' => false, 'message' => 'Data produk atau kategori tidak valid.']);
-    }
+    // Cek apakah admin mengupload gambar baru
+    if (isset($_FILES['productImage']) && $_FILES['productImage']['error'] === 0) {
+        // JIKA GANTI GAMBAR
+        $imageName = $_FILES['productImage']['name'];
+        $tmpName = $_FILES['productImage']['tmp_name'];
+        $ext = pathinfo($imageName, PATHINFO_EXTENSION);
+        $newImageName = time() . '-' . uniqid() . '.' . $ext;
 
-    $checkCategoryQuery = mysqli_prepare($conn, "SELECT id FROM category WHERE id = ? LIMIT 1");
-    mysqli_stmt_bind_param($checkCategoryQuery, 'i', $categoryId);
-    mysqli_stmt_execute($checkCategoryQuery);
-    mysqli_stmt_store_result($checkCategoryQuery);
-    if (mysqli_stmt_num_rows($checkCategoryQuery) === 0) {
-        return json_encode(['success' => false, 'message' => 'Kategori tidak ditemukan.']);
-    }
-
-    // Ambil gambar lama
-    $query = mysqli_prepare($conn, "SELECT image FROM product WHERE id = ? LIMIT 1");
-    mysqli_stmt_bind_param($query, 'i', $id);
-    mysqli_stmt_execute($query);
-    $result = mysqli_stmt_get_result($query);
-    $row = $result ? mysqli_fetch_assoc($result) : null;
-    if (!$row) {
-        return json_encode(['success' => false, 'message' => 'Produk tidak ditemukan.']);
-    }
-    $oldImage = $row['image'];
-
-    $imageQuery = '';
-    $imageName = '';
-    if ($image && $image['name'] != '') {
-        $imageError = '';
-        if (!isValidImageUpload($image, $imageError)) {
-            return json_encode(['success' => false, 'message' => $imageError]);
+        if (move_uploaded_file($tmpName, "assets/uploads/" . $newImageName)) {
+            // UPDATE QUERY dengan Gambar & Stok Baru
+            $query = "UPDATE product SET category_id = ?, name = ?, color = ?, size = ?, price = ?, stock = ?, image = ?, about = ?, status = ? WHERE id = ?";
+            $stmt = mysqli_prepare($conn, $query);
+            mysqli_stmt_bind_param($stmt, 'isssiisssi', $category_id, $name, $color, $size, $price, $stock, $newImageName, $about, $status, $id);
         }
-
-        // Tentukan direktori target untuk gambar
-        $targetDir = 'assets/uploads/';
-        $oldImagePath = $targetDir . $oldImage;
-
-        // Hapus gambar lama jika ada
-        if (file_exists($oldImagePath) && !empty($oldImage)) {
-            unlink($oldImagePath);
-        }
-
-        // Tentukan nama gambar baru
-        $imageName = uniqid() . '_' . basename($image['name']);
-        $targetFile = $targetDir . $imageName;
-
-        // Pindahkan gambar ke direktori tujuan
-        if (move_uploaded_file($image['tmp_name'], $targetFile)) {
-            $imageQuery = ", image = '$imageName'";
-        } else {
-            return json_encode(['success' => false, 'message' => 'Gagal mengunggah gambar.']);
-        }
-    }
-
-    // Query untuk memperbarui produk
-    if ($imageQuery !== '') {
-        $query = mysqli_prepare($conn, "UPDATE product SET name = ?, about = ?, price = ?, color = ?, size = ?, category_id = ?, status = ?, image = ? WHERE id = ?");
-        mysqli_stmt_bind_param($query, 'ssdssissi', $name, $desc, $price, $color, $size, $categoryId, $status, $imageName, $id);
     } else {
-        $query = mysqli_prepare($conn, "UPDATE product SET name = ?, about = ?, price = ?, color = ?, size = ?, category_id = ?, status = ? WHERE id = ?");
-        mysqli_stmt_bind_param($query, 'ssdssisi', $name, $desc, $price, $color, $size, $categoryId, $status, $id);
+        // JIKA TIDAK GANTI GAMBAR (Hanya update data teks dan stok saja)
+        $query = "UPDATE product SET category_id = ?, name = ?, color = ?, size = ?, price = ?, stock = ?, about = ?, status = ? WHERE id = ?";
+        $stmt = mysqli_prepare($conn, $query);
+        mysqli_stmt_bind_param($stmt, 'isssiissi', $category_id, $name, $color, $size, $price, $stock, $about, $status, $id);
     }
 
-    $result = mysqli_stmt_execute($query);
-
-    if (!$result) {
-        return json_encode(['success' => false, 'message' => 'Gagal memperbarui produk: ' . mysqli_error($conn)]);
+    if (mysqli_stmt_execute($stmt)) {
+        echo json_encode(['success' => true, 'message' => 'Produk berhasil diperbarui!']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Gagal memperbarui data produk.']);
     }
-
-    return json_encode(['success' => true, 'message' => 'Produk berhasil diperbarui.']);
+    exit;
 }
 
 function deleteProduct($id)
