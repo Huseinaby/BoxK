@@ -42,6 +42,12 @@ $queryItems = mysqli_prepare($conn, "
 mysqli_stmt_bind_param($queryItems, 'i', $orderId);
 mysqli_stmt_execute($queryItems);
 $items = mysqli_stmt_get_result($queryItems);
+
+// 5. Ambil Identitas Toko & Daftar Bank Dinamis dari Database
+$shop = getShopIdentity();
+if (!$shop) {
+  $shop = ['shop_name' => 'BoxKado', 'whatsapp' => '', 'address' => '', 'qris_image' => ''];
+}
 ?>
 
 <!DOCTYPE html>
@@ -52,9 +58,7 @@ $items = mysqli_stmt_get_result($queryItems);
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Invoice
-    <?= htmlspecialchars($order['invoice_number']) ?> - BoxKado
-  </title>
+  <title>Invoice <?= htmlspecialchars($order['invoice_number']) ?> - <?= htmlspecialchars($shop['shop_name']) ?></title>
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" type="text/css" href="assets/css/style.css">
@@ -62,7 +66,7 @@ $items = mysqli_stmt_get_result($queryItems);
   <link rel="icon" href="assets/images/boxkado-icon.png" type="image/gif" />
   <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/jquery.mCustomScrollbar.min.css">
-  <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
     .header_section {
@@ -97,16 +101,19 @@ $items = mysqli_stmt_get_result($queryItems);
       background-color: #dc3545;
       color: #fff;
     }
+
+    .border-pink {
+      border-color: #ff74a4 !important;
+    }
   </style>
 </head>
 
 <body class="d-flex flex-column min-vh-100">
 
-  <!-- Header -->
   <div class="header_section header_bg">
     <div class="container">
       <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href=""><b>BoxKado</b></a>
+        <a class="navbar-brand" href="index.php"><b><?= htmlspecialchars($shop['shop_name']) ?></b></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -116,9 +123,7 @@ $items = mysqli_stmt_get_result($queryItems);
             <li class="nav-item"><a class="nav-link" href="product.php">Produk</a></li>
             <li class="nav-item"><a class="nav-link" href="aboutme.php">Tentang Kami</a></li>
             <li class="nav-item"><a class="nav-link" href="cart.php">Keranjang</a></li>
-            <li class="nav-item">
-              <a class="nav-link" href="orders.php">Pesanan Saya</a>
-            </li>
+            <li class="nav-item"><a class="nav-link" href="orders.php">Pesanan Saya</a></li>
           </ul>
           <ul class="navbar-nav ml-lg-auto align-items-lg-center">
             <?php if ($user): ?>
@@ -127,7 +132,7 @@ $items = mysqli_stmt_get_result($queryItems);
                   <?= htmlspecialchars($user['username']) ?>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
-                  <li><a class="dropdown-item" href="admin/logout.php">Logout</a></li>
+                  <li><a class="dropdown-item text-danger" href="admin/logout.php">Logout</a></li>
                 </ul>
               </li>
             <?php endif; ?>
@@ -136,9 +141,6 @@ $items = mysqli_stmt_get_result($queryItems);
       </nav>
     </div>
   </div>
-  <!-- End Header -->
-
-  <!-- Invoice Content -->
   <div class="cream_section layout_padding mb-5">
     <div class="container">
 
@@ -153,8 +155,8 @@ $items = mysqli_stmt_get_result($queryItems);
             </div>
           <?php elseif ($order['status'] === 'pending' && !empty($order['bukti_pembayaran'])): ?>
             <div class="alert alert-info text-center py-3 mb-4 border-0 shadow-sm">
-              <h4 class="fw-bold mb-1" style="color: #055160;"><i class="fa fa-clock-o me-2"></i>Menunggu Verifikasi Admin
-              </h4>
+              <h4 class="fw-bold mb-1" style="color: #055160;"><i class="fa-regular fa-clock me-2"></i>Menunggu Verifikasi
+                Admin</h4>
               <p class="mb-0 small text-muted">Bukti pembayaran Anda telah dikirim dan sedang diperiksa oleh tim kami.
                 Mohon tunggu ya!</p>
             </div>
@@ -168,7 +170,7 @@ $items = mysqli_stmt_get_result($queryItems);
             <div class="alert alert-success text-center py-3 mb-4 border-0 shadow-sm">
               <h4 class="fw-bold mb-1"><i class="fa fa-check-circle me-2"></i>Pesanan Selesai</h4>
               <p class="mb-0 small text-muted">Kado telah diterima/diambil. Terima kasih banyak telah memercayakan
-                BoxKado!</p>
+                <?= htmlspecialchars($shop['shop_name']) ?>!</p>
             </div>
           <?php elseif ($order['status'] === 'dibatalkan'): ?>
             <div class="alert alert-danger text-center py-3 mb-4 border-0 shadow-sm">
@@ -176,7 +178,7 @@ $items = mysqli_stmt_get_result($queryItems);
               <p class="mb-0 small text-muted">Mohon maaf, pesanan ini telah dibatalkan oleh sistem atau admin.</p>
             </div>
           <?php endif; ?>
-          <!-- Baris Info Nota -->
+
           <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
             <div>
               <h3 class="fw-bold text-secondary mb-1">INVOICE PESANAN</h3>
@@ -186,18 +188,15 @@ $items = mysqli_stmt_get_result($queryItems);
             </div>
             <div class="text-md-end mt-2 mt-md-0">
               <span class="badge px-3 py-2 fs-6 badge-<?= htmlspecialchars($order['status']) ?>">
-                Status:
-                <?= ucfirst(htmlspecialchars($order['status'])) ?>
+                Status: <?= ucfirst(htmlspecialchars($order['status'])) ?>
               </span>
-              <div class="text-muted small mt-1">Tanggal:
-                <?= date('d M Y, H:i', strtotime($order['created_at'])) ?>
+              <div class="text-muted small mt-1">Tanggal: <?= date('d M Y, H:i', strtotime($order['created_at'])) ?>
               </div>
             </div>
           </div>
 
           <hr>
 
-          <!-- Detail Alamat & Metode -->
           <div class="row g-4 my-2">
             <div class="col-md-6">
               <h6 class="fw-bold text-muted mb-2">Informasi Pengiriman:</h6>
@@ -206,21 +205,23 @@ $items = mysqli_stmt_get_result($queryItems);
               </p>
               <?php if ($order['shipping_method'] === 'diantar'): ?>
                 <p class="mb-1 text-dark"><strong>Penerima:</strong>
-                  <?= htmlspecialchars($order['nama_penerima']) ?> (
-                  <?= htmlspecialchars($order['telepon']) ?>)
+                  <?= htmlspecialchars($order['nama_penerima']) ?> (<?= htmlspecialchars($order['telepon']) ?>)
                 </p>
                 <p class="mb-0 text-muted small">
                   <?= nl2br(htmlspecialchars($order['alamat_lengkap'])) ?>
                 </p>
               <?php else: ?>
-                <p class="mb-0 text-muted small">Silakan datang langsung ke toko offline BoxKado untuk mengambil pesanan
-                  Anda.</p>
+                <p class="mb-0 text-muted small">Silakan datang langsung ke toko offline
+                  <strong><?= htmlspecialchars($shop['shop_name']) ?></strong> untuk mengambil pesanan Anda.</p>
+                <?php if (!empty($shop['address'])): ?>
+                  <small class="text-muted d-block mt-1"><i class="fa fa-location-dot me-1"></i> Lokasi:
+                    <?= htmlspecialchars($shop['address']) ?></small>
+                <?php endif; ?>
               <?php endif; ?>
 
               <?php if (!empty($order['catatan'])): ?>
                 <div class="mt-2 p-2 bg-light rounded border-start border-3 border-pink small">
-                  <strong>Catatan Kado:</strong> "
-                  <?= htmlspecialchars($order['catatan']) ?>"
+                  <strong>Catatan Kado:</strong> "<?= htmlspecialchars($order['catatan']) ?>"
                 </div>
               <?php endif; ?>
             </div>
@@ -231,26 +232,48 @@ $items = mysqli_stmt_get_result($queryItems);
                 <?= $order['payment_method'] === 'transfer_bank' ? 'Transfer Bank (Manual)' : 'Dompet Digital (QRIS / E-Wallet)' ?>
               </p>
 
-              <!-- Panduan Bayar Dinamis Sesuai Opsi Pilihan User -->
-              <div class="p-3 bg-light rounded text-start d-inline-block w-100 mt-2">
+              <div class="p-3 bg-light rounded text-start d-inline-block w-100 mt-2 border">
                 <?php if ($order['payment_method'] === 'transfer_bank'): ?>
-                  <small class="d-block fw-bold text-dark mb-1">Silakan transfer ke rekening resmi kami:</small>
-                  <span class="d-block fs-6 fw-bold text-primary">Bank BCA: 123-4567-890</span>
-                  <small class="text-muted d-block">Atas Nama: BoxKado Official</small>
+                  <small class="d-block fw-bold text-dark mb-2"><i class="fa fa-credit-card me-1 text-secondary"></i>
+                    Silakan transfer ke rekening resmi kami:</small>
+                  <?php
+                  $banks = getShopBanks();
+                  if (mysqli_num_rows($banks) == 0):
+                    ?>
+                    <span class="text-muted small d-block"><i>Belum ada rekening bank yang dikonfigurasi owner.</i></span>
+                  <?php
+                  else:
+                    while ($b = mysqli_fetch_assoc($banks)):
+                      ?>
+                      <div class="mb-2 pb-2 border-bottom last-border-0">
+                        <span class="d-block small fw-bold text-primary">Bank <?= htmlspecialchars($b['bank_name']) ?>:
+                          <?= htmlspecialchars($b['account_number']) ?></span>
+                        <small class="text-muted d-block">a.n. <?= htmlspecialchars($b['account_name']) ?></small>
+                      </div>
+                    <?php
+                    endwhile;
+                  endif;
+                  ?>
                 <?php else: ?>
-                  <small class="d-block fw-bold text-dark mb-2 text-center">Silakan scan QRIS BoxKado:</small>
+                  <small class="d-block fw-bold text-dark mb-2 text-center"><i
+                      class="fa fa-qrcode me-1 text-secondary"></i> Silakan scan QRIS
+                    <?= htmlspecialchars($shop['shop_name']) ?>:</small>
                   <div class="text-center">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BoxKado-Payment"
-                      alt="QRIS BoxKado" class="img-fluid rounded border p-2 bg-white" style="max-width: 160px;">
+                    <?php if (!empty($shop['qris_image']) && file_exists('assets/uploads/' . $shop['qris_image'])): ?>
+                      <img src="assets/uploads/<?= $shop['qris_image'] ?>" alt="QRIS Pembayaran"
+                        class="img-fluid rounded border p-2 bg-white" style="max-height: 180px; object-fit: contain;">
+                    <?php else: ?>
+                      <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BoxKado-Payment"
+                        alt="QRIS Default" class="img-fluid rounded border p-2 bg-white" style="max-width: 150px;">
+                    <?php endif; ?>
                   </div>
-                  <small class="text-muted text-center d-block mt-2">Bisa di-scan via Dana, GoPay, OVO, ShopeePay, atau
-                    MBanking</small>
+                  <small class="text-muted text-center d-block mt-2" style="font-size: 11px;">Mendukung QRIS M-Banking &
+                    seluruh aplikasi E-Wallet lokal.</small>
                 <?php endif; ?>
               </div>
             </div>
           </div>
 
-          <!-- Tabel Item Produk -->
           <div class="table-responsive mt-4">
             <table class="table align-middle">
               <thead class="table-light">
@@ -273,14 +296,9 @@ $items = mysqli_stmt_get_result($queryItems);
                         </span>
                       </div>
                     </td>
-                    <td class="text-center">Rp
-                      <?= number_format($item['price'], 0, ',', '.') ?>
-                    </td>
-                    <td class="text-center">
-                      <?= $item['quantity'] ?>
-                    </td>
-                    <td class="text-end fw-bold">Rp
-                      <?= number_format($item['price'] * $item['quantity'], 0, ',', '.') ?>
+                    <td class="text-center">Rp <?= number_format($item['price'], 0, ',', '.') ?></td>
+                    <td class="text-center"><?= $item['quantity'] ?></td>
+                    <td class="text-end fw-bold">Rp <?= number_format($item['price'] * $item['quantity'], 0, ',', '.') ?>
                     </td>
                   </tr>
                 <?php endwhile; ?>
@@ -288,8 +306,7 @@ $items = mysqli_stmt_get_result($queryItems);
               <tfoot>
                 <tr>
                   <td colspan="3" class="text-end text-muted border-0 pt-3">Total Harga Barang:</td>
-                  <td class="text-end border-0 pt-3">Rp
-                    <?= number_format($order['total_items_price'], 0, ',', '.') ?>
+                  <td class="text-end border-0 pt-3">Rp <?= number_format($order['total_items_price'], 0, ',', '.') ?>
                   </td>
                 </tr>
                 <tr>
@@ -301,8 +318,7 @@ $items = mysqli_stmt_get_result($queryItems);
                 <tr class="fs-5 fw-bold">
                   <td colspan="3" class="text-end border-0 pt-2">Total Pembayaran:</td>
                   <td class="text-end border-0 pt-2" style="color: #ff74a4;">Rp
-                    <?= number_format($order['grand_total'], 0, ',', '.') ?>
-                  </td>
+                    <?= number_format($order['grand_total'], 0, ',', '.') ?></td>
                 </tr>
               </tfoot>
             </table>
@@ -319,7 +335,6 @@ $items = mysqli_stmt_get_result($queryItems);
 
               <form action="upload-payment.php" method="POST" enctype="multipart/form-data" class="mt-3 mb-0">
                 <input type="hidden" name="order_id" value="<?= $orderId ?>">
-
                 <div class="input-group">
                   <input type="file" name="bukti_bayar" class="form-control" accept="image/*" required>
                   <button type="submit" class="btn text-white fw-bold px-4" style="background-color: #ff74a4;">
@@ -346,40 +361,34 @@ $items = mysqli_stmt_get_result($queryItems);
             <?php endif; ?>
           </div>
 
-        </div>
-        <div class="d-flex justify-content-between align-items-center mt-4">
-          <div>
-            <a href="product.php" class="btn btn-outline-secondary px-4">
-              <i class="fa fa-arrow-left me-2"></i>Kembali Belanja
-            </a>
+          <div class="d-flex justify-content-between align-items-center mt-4">
+            <div>
+              <a href="product.php" class="btn btn-outline-secondary px-4">
+                <i class="fa fa-arrow-left me-2"></i>Kembali Belanja
+              </a>
+            </div>
+            <div>
+              <?php if ($order['status'] === 'pending' && empty($order['bukti_pembayaran'])): ?>
+                <button type="button" class="btn btn-outline-danger fw-bold px-4" onclick="cancelOrder(<?= $orderId ?>)">
+                  <i class="fa fa-times me-2"></i>Batalkan Pesanan Ini
+                </button>
+              <?php endif; ?>
+            </div>
           </div>
 
-          <div>
-            <?php if ($order['status'] === 'pending' && empty($order['bukti_pembayaran'])): ?>
-              <button type="button" class="btn btn-outline-danger fw-bold px-4" onclick="cancelOrder(<?= $orderId ?>)">
-                <i class="fa fa-times me-2"></i>Batalkan Pesanan Ini
-              </button>
-            <?php endif; ?>
-          </div>
         </div>
-
       </div>
+
     </div>
-
-  </div>
   </div>
 
-  </div>
-  </div>
-
-  <!-- Footer -->
   <div class="copyright_section mt-auto">
     <div class="container">
-      <p class="copyright_text">2025 All Rights Reserved. &copy;2025 BoxKado</p>
+      <p class="copyright_text"><?= date('Y') ?> All Rights Reserved. &copy; <?= htmlspecialchars($shop['shop_name']) ?>
+      </p>
     </div>
   </div>
 
-  <!-- Modal Konfirmasi Pembatalan Pesanan -->
   <div class="modal fade" id="cancelConfirmModal" tabindex="-1" aria-labelledby="cancelConfirmModalLabel"
     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -401,7 +410,6 @@ $items = mysqli_stmt_get_result($queryItems);
     </div>
   </div>
 
-  <!-- Toast Notifikasi Error Upload Bukti Bayar -->
   <div class="toast-container position-fixed top-50 start-50 translate-middle p-3" style="z-index: 1060;">
     <div id="errorToast" class="toast align-items-center text-white bg-danger border-0 shadow-lg" role="alert"
       aria-live="assertive" aria-atomic="true">
@@ -422,36 +430,26 @@ $items = mysqli_stmt_get_result($queryItems);
     </div>
   </div>
 
-  <!-- JS -->
   <script src="assets/js/jquery.min.js"></script>
   <script src="assets/js/popper.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // Menyimpan instance modal secara global agar bisa dikontrol lewat fungsi
     let cancelModalInstance = null;
 
     function cancelOrder(orderId) {
-      // 1. Inisialisasi dan tampilkan Bootstrap 5 Modal Konfirmasi
       const cancelModalElement = document.getElementById('cancelConfirmModal');
       cancelModalInstance = new bootstrap.Modal(cancelModalElement);
       cancelModalInstance.show();
 
-      // 2. Ikat aksi klik tombol "Ya, Batalkan" secara dinamis
       const btnDoCancel = document.getElementById('btnDoCancel');
-
-      // Bersihkan event listener lama dengan trik cloneNode agar tidak double post
       btnDoCancel.replaceWith(btnDoCancel.cloneNode(true));
-
-      // Ambil kembali elemen tombol yang baru setelah di-clone
       const freshBtnDoCancel = document.getElementById('btnDoCancel');
 
-      // Tambahkan event klik baru
       freshBtnDoCancel.addEventListener('click', function () {
         const formData = new FormData();
         formData.append('action', 'cancelOrderUser');
         formData.append('order_id', orderId);
 
-        // Kirim data ke backend via POST ke functions.php
         fetch('functions.php', {
           method: 'POST',
           body: formData
@@ -459,7 +457,6 @@ $items = mysqli_stmt_get_result($queryItems);
           .then(response => response.json())
           .then(data => {
             if (data.success) {
-              // Sembunyikan modal sebelum reload halaman
               if (cancelModalInstance) {
                 cancelModalInstance.hide();
               }
@@ -475,17 +472,14 @@ $items = mysqli_stmt_get_result($queryItems);
       });
     }
 
-    // Pemicu otomatis saat halaman memuat eror dari upload-payment
     document.addEventListener("DOMContentLoaded", function () {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.has('error')) {
-        // 1. Buat elemen backdrop gelap secara dinamis
         const backdrop = document.createElement('div');
         backdrop.className = 'modal-backdrop fade show';
-        backdrop.style.zIndex = '1055'; // Berada tepat di bawah toast
+        backdrop.style.zIndex = '1055';
         document.body.appendChild(backdrop);
 
-        // 2. Tampilkan Toast
         const errorToastElement = document.getElementById('errorToast');
         const toast = new bootstrap.Toast(errorToastElement, {
           autohide: true,
@@ -493,12 +487,10 @@ $items = mysqli_stmt_get_result($queryItems);
         });
         toast.show();
 
-        // 3. Hapus backdrop secara otomatis saat toast mulai menutup
         errorToastElement.addEventListener('hidden.bs.toast', function () {
           backdrop.remove();
         });
 
-        // Bersihkan parameter (?error) dari URL browser agar rapi
         window.history.replaceState({}, document.title, window.location.pathname + "?id=" + urlParams.get('id'));
       }
     });

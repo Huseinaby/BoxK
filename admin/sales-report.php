@@ -275,9 +275,11 @@ $queryTopProducts = mysqli_query($conn, "
         <a href="category.php"><i class="fa fa-tags me-2"></i> Kategori</a>
         <a href="product.php"><i class="fa fa-gift me-2"></i> Produk</a>
         <a href="orders.php"><i class="fa fa-shopping-cart me-2"></i> Pesanan</a>
-        <a href="sales-report.php" style="background-color: rgba(0,0,0,0.1); font-weight: bold;"><i
-            class="fa fa-chart-line me-2"></i> Laporan Penjualan</a>
+
         <?php if ($user['role'] === 'owner'): ?>
+          <a href="sales-report.php" style="background-color: rgba(0,0,0,0.1); font-weight: bold;"><i
+              class="fa fa-chart-line me-2"></i> Laporan Penjualan</a>
+          <a href="shop-setting.php"><i class="fa fa-store me-2"></i> Kelola Toko</a>
           <a href="admin-manage.php"><i class="fa fa-user-gear me-2"></i> Kelola Admin</a>
         <?php endif; ?>
       </div>

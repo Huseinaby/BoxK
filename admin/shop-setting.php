@@ -174,11 +174,24 @@ $banksResult = getShopBanks();
 
   <nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">BoxKado Owner Panel</a>
+      <a class="navbar-brand" href="#">BoxKado</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><span class="nav-link"><i class="fa fa-crown me-1 text-warning"></i>
-              <?= htmlspecialchars($user['username']) ?> (Owner)</span></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown"
+              aria-expanded="false">
+              <i class="fa fa-user-shield me-1"></i>
+              <?= htmlspecialchars($user['username'], ENT_QUOTES, 'UTF-8') ?>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+              <li><a class="dropdown-item text-danger" href="logout.php"><i class="fa fa-sign-out-alt me-1"></i>
+                  Logout</a></li>
+            </ul>
+          </li>
         </ul>
       </div>
     </div>
@@ -192,15 +205,12 @@ $banksResult = getShopBanks();
         <a href="category.php"><i class="fa fa-tags me-2"></i> Kategori</a>
         <a href="product.php"><i class="fa fa-gift me-2"></i> Produk</a>
         <a href="orders.php"><i class="fa fa-shopping-cart me-2"></i> Pesanan</a>
-        <a href="sales-report.php"><i class="fa fa-chart-line me-2"></i> Laporan Penjualan</a>
-        <a href="shop-setting.php" style="background-color: rgba(0,0,0,0.1); font-weight: bold;"><i
-            class="fa fa-store me-2"></i> Kelola Toko</a>
         <?php if ($user['role'] === 'owner'): ?>
+          <a href="sales-report.php"><i class="fa fa-chart-line me-2"></i> Laporan Penjualan</a>
+          <a href="shop-setting.php" style="background-color: rgba(0,0,0,0.1); font-weight: bold;"><i
+              class="fa fa-store me-2"></i> Kelola Toko</a>
           <a href="admin-manage.php"><i class="fa fa-user-gear me-2"></i> Kelola Admin</a>
         <?php endif; ?>
-      </div>
-      <div class="logout-box">
-        <a href="logout.php" class="btn-logout-custom"><i class="fa fa-sign-out-alt me-2"></i> Logout</a>
       </div>
     </div>
 
@@ -314,7 +324,8 @@ $banksResult = getShopBanks();
                       <td>
                         <div class="fw-bold text-dark small"><?= htmlspecialchars($b['account_number']) ?></div>
                         <div class="text-muted text-xs" style="font-size: 12px;">a.n.
-                          <?= htmlspecialchars($b['account_name']) ?></div>
+                          <?= htmlspecialchars($b['account_name']) ?>
+                        </div>
                       </td>
                       <td class="text-center">
                         <button type="button" class="btn btn-sm btn-outline-danger btn-delete-bank"

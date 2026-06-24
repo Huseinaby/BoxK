@@ -128,7 +128,8 @@ $query = mysqli_query($conn, "
       <a href="orders.php" style="background-color: rgba(0,0,0,0.1); font-weight: bold;"><i
           class="fa fa-shopping-cart me-2"></i> Pesanan</a>
       <?php if (isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'owner'): ?>
-        <a href="sales-report.php"><i class="fa fa-chart-line me-2"></i> Laporan Penjualan</a>
+        <a href="sales-report.php"><i class="fa fa-chart-line me-2"></i> Laporan Penjualan</a><a
+          href="shop-setting.php"><i class="fa fa-store me-2"></i> Kelola Toko</a>
         <a href="admin-manage.php"><i class="fa fa-user-gear me-2"></i> Kelola Admin</a>
       <?php endif; ?>
     </div>
