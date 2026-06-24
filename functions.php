@@ -776,3 +776,17 @@ function cancelOrderUserAction()
     }
     exit;
 }
+
+
+function requireOwnerAccess()
+{
+    if (!isset($_SESSION['user'])) {
+        header('Location: index.php');
+        exit;
+    }
+    // Jika role bukan owner, tendang balik ke dashboard utama admin
+    if ($_SESSION['user']['role'] !== 'owner') {
+        header('Location: dashboard.php');
+        exit;
+    }
+}

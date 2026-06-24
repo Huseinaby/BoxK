@@ -161,6 +161,9 @@ $totalUsers = $dataUsers['total_users'] ?? 0;
             <a href="category.php"><i class="fa fa-tags me-2"></i> Kategori</a>
             <a href="product.php"><i class="fa fa-gift me-2"></i> Produk</a>
             <a href="orders.php"><i class="fa fa-shopping-cart me-2"></i> Pesanan</a>
+            <?php if (isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'owner'): ?>
+                <a href="admin-manage.php"><i class="fa fa-user-gear me-2"></i> Kelola Admin</a>
+            <?php endif; ?>
         </div>
         <div class="content container">
             <div class="mb-4">
