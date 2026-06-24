@@ -790,3 +790,16 @@ function requireOwnerAccess()
         exit;
     }
 }
+
+function getShopIdentity()
+{
+    global $conn;
+    $query = mysqli_query($conn, "SELECT * FROM shop_identities WHERE id = 1 LIMIT 1");
+    return mysqli_fetch_assoc($query);
+}
+
+function getShopBanks()
+{
+    global $conn;
+    return mysqli_query($conn, "SELECT * FROM shop_banks ORDER BY id ASC");
+}
