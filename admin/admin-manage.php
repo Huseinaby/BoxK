@@ -7,6 +7,9 @@ requireOwnerAccess();
 
 $user = $_SESSION['user'];
 
+// Variabel bantu untuk menampung pesan SweetAlert2 dari PHP ke JavaScript
+$swalScript = '';
+
 // 1. Proses Tambah Admin Baru
 if (isset($_POST['add_admin'])) {
   $username = mysqli_real_escape_string($conn, $_POST['username']);
@@ -15,19 +18,35 @@ if (isset($_POST['add_admin'])) {
   // Cek apakah username sudah dipakai
   $checkUser = mysqli_query($conn, "SELECT id FROM users WHERE username = '$username'");
   if (mysqli_num_rows($checkUser) > 0) {
-    echo "<script>alert('Username sudah terdaftar!'); window.location.href='admin-manage.php';</script>";
-    exit;
-  }
+    $swalScript = "
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: 'Username sudah terdaftar!',
+                confirmButtonColor: '#ff94c4'
+            }).then(function() {
+                window.location.href = 'admin-manage.php';
+            });
+        ";
+  } else {
+    // Hash password demi keamanan
+    $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
-  // Hash password demi keamanan
-  $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+    // Insert sebagai role admin
+    $queryInsert = mysqli_query($conn, "INSERT INTO users (username, password, role) VALUES ('$username', '$passwordHash', 'admin')");
 
-  // Insert sebagai role admin
-  $queryInsert = mysqli_query($conn, "INSERT INTO users (username, password, role) VALUES ('$username', '$passwordHash', 'admin')");
-
-  if ($queryInsert) {
-    echo "<script>alert('Akun Admin berhasil ditambahkan!'); window.location.href='admin-manage.php';</script>";
-    exit;
+    if ($queryInsert) {
+      $swalScript = "
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: 'Akun Admin berhasil ditambahkan!',
+                    confirmButtonColor: '#ff94c4'
+                }).then(function() {
+                    window.location.href = 'admin-manage.php';
+                });
+            ";
+    }
   }
 }
 
@@ -41,8 +60,16 @@ if (isset($_GET['delete_id'])) {
 
   if ($userToDelete && $userToDelete['role'] === 'admin') {
     mysqli_query($conn, "DELETE FROM users WHERE id = $deleteId");
-    echo "<script>alert('Akun Admin berhasil dihapus!'); window.location.href='admin-manage.php';</script>";
-    exit;
+    $swalScript = "
+            Swal.fire({
+                icon: 'success',
+                title: 'Dihapus!',
+                text: 'Akun Admin berhasil dihapus!',
+                confirmButtonColor: '#ff94c4'
+            }).then(function() {
+                window.location.href = 'admin-manage.php';
+            });
+        ";
   }
 }
 
@@ -158,8 +185,10 @@ $queryAdmin = mysqli_query($conn, "SELECT id, username FROM users WHERE role = '
       <a href="category.php"><i class="fa fa-tags me-2"></i> Kategori</a>
       <a href="product.php"><i class="fa fa-gift me-2"></i> Produk</a>
       <a href="orders.php"><i class="fa fa-shopping-cart me-2"></i> Pesanan</a>
+      <a href="sales-report.php"><i class="fa fa-chart-line me-2"></i> Laporan Penjualan</a>
       <a href="admin-manage.php" style="background-color: rgba(0,0,0,0.1); font-weight: bold;"><i
           class="fa fa-user-gear me-2"></i> Kelola Admin</a>
+
     </div>
 
     <div class="content container">
@@ -223,11 +252,10 @@ $queryAdmin = mysqli_query($conn, "SELECT id, username FROM users WHERE role = '
                         <?= date('d M Y', strtotime($row['created_at'] ?? date('Y-m-d'))) ?>
                       </td>
                       <td class="text-center">
-                        <a href="admin-manage.php?delete_id=<?= $row['id'] ?>"
-                          class="btn btn-sm btn-outline-danger px-3 fw-bold"
-                          onclick="return confirm('Yakin ingin mencabut hak akses admin ini?')">
+                        <button type="button" class="btn btn-sm btn-outline-danger px-3 fw-bold btn-delete"
+                          data-href="admin-manage.php?delete_id=<?= $row['id'] ?>">
                           <i class="fa fa-trash-can me-1"></i> Hapus
-                        </a>
+                        </button>
                       </td>
                     </tr>
                   <?php endwhile; ?>
@@ -240,6 +268,37 @@ $queryAdmin = mysqli_query($conn, "SELECT id, username FROM users WHERE role = '
     </div>
   </div>
 
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script>
+    // Logika untuk Pop-up Konfirmasi Hapus
+    $('.btn-delete').on('click', function (e) {
+      e.preventDefault();
+      const href = $(this).attr('data-href');
+
+      Swal.fire({
+        title: 'Apakah kamu yakin?',
+        text: "Hak akses staf admin ini akan dicabut secara permanen!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545', // Warna merah untuk konfirmasi hapus
+        cancelButtonColor: '#6c757d',  // Warna abu-abu untuk batal
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Batal',
+        reverseButtons: true // Membuat tombol batal di kiri dan hapus di kanan
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Jika ditekan Ya, arahkan ke link penghapusan
+          window.location.href = href;
+        }
+      });
+    });
+
+    // Panggilan otomatis alert sukses/gagal dari PHP sebelumnya
+    <?php if (!empty($swalScript))
+      echo $swalScript; ?>
+  </script>
 </body>
 
 </html>
