@@ -154,6 +154,91 @@ $queryTopProducts = mysqli_query($conn, "
         margin-left: 0;
       }
     }
+
+    /* ==========================================================================
+   CSS KHUSUS UNTUK CETAK DOKUMEN (PRINT MODE)
+   ========================================================================== */
+    @media print {
+
+      /* 1. Sembunyikan elemen web yang tidak diperlukan dalam dokumen fisik */
+      .navbar,
+      .sidebar,
+      .btn,
+      form,
+      .text-muted.small {
+        display: none !important;
+      }
+
+      /* 2. Lebarkan area konten utama agar memenuhi kertas (A4/F4) */
+      .content {
+        margin-left: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+      }
+
+      body {
+        background-color: #fff !important;
+        color: #000 !important;
+        font-size: 12pt;
+      }
+
+      /* 3. Hilangkan efek shadow dan border melengkung Bootstrap agar tampak formal */
+      .card {
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        margin-bottom: 20px !important;
+      }
+
+      /* 4. Atur tata letak grid ringkasan (KPI Cards) agar tetap berjejer ke samping */
+      .row {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 15px !important;
+      }
+
+      .col-md-4 {
+        width: 33.33% !important;
+        border: 1px solid #ddd !important;
+        padding: 15px !important;
+        border-radius: 6px !important;
+      }
+
+      /* 5. Modifikasi tabel agar terlihat seperti laporan formal standar */
+      .table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+      }
+
+      .table th,
+      .table td {
+        border: 1px solid #000 !important;
+        /* Beri garis hitam tipis pada tabel */
+        padding: 8px !important;
+      }
+
+      .table-light {
+        background-color: #f2f2f2 !important;
+        -webkit-print-color-adjust: exact;
+        /* Memaksa browser mencetak warna latar header */
+        print-color-adjust: exact;
+      }
+
+      /* 6. Atur layout bagian bawah (Tabel Rincian & Top Products) agar rapi */
+      .col-lg-8 {
+        width: 65% !important;
+      }
+
+      .col-lg-4 {
+        width: 35% !important;
+      }
+
+      /* Beri garis pembatas tipis pada list produk terlaris saat dicetak */
+      .list-group-item {
+        border-bottom: 1px solid #ddd !important;
+      }
+    }
   </style>
 </head>
 
@@ -161,12 +246,23 @@ $queryTopProducts = mysqli_query($conn, "
 
   <nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">BoxKado Owner Panel</a>
+      <a class="navbar-brand" href="#">BoxKado</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><span class="nav-link"><i class="fa fa-crown me-1 text-warning"></i>
-              <?= htmlspecialchars($user['username']) ?> (Owner)
-            </span></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown"
+              aria-expanded="false">
+              <i class="fa fa-user-shield me-1"></i> <?= htmlspecialchars($user['username'], ENT_QUOTES, 'UTF-8') ?>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+              <li><a class="dropdown-item text-danger" href="logout.php"><i class="fa fa-sign-out-alt me-1"></i>
+                  Logout</a></li>
+            </ul>
+          </li>
         </ul>
       </div>
     </div>
@@ -184,9 +280,6 @@ $queryTopProducts = mysqli_query($conn, "
         <?php if ($user['role'] === 'owner'): ?>
           <a href="admin-manage.php"><i class="fa fa-user-gear me-2"></i> Kelola Admin</a>
         <?php endif; ?>
-      </div>
-      <div class="logout-box">
-        <a href="logout.php" class="btn-logout-custom"><i class="fa fa-sign-out-alt me-2"></i> Logout</a>
       </div>
     </div>
 
