@@ -96,6 +96,9 @@ $queryAdmin = mysqli_query($conn, "SELECT id, username FROM users WHERE role = '
     .navbar {
       background-color: #ff94c4;
       box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+      position: sticky !important;
+      top: 0;
+      z-index: 1030 !important;
     }
 
     .navbar-brand,
