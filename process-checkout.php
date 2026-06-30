@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $userId = (int) $user['id'];
 
-// 3. Ambil data keranjang user langsung dari database (menggunakan fungsi getCartItems Anda)
+// 3. Ambil data keranjang user langsung dari database
 $carts = getCartItems();
 
 if (empty($carts)) {
@@ -31,17 +31,16 @@ $shipping_method = $_POST['shipping_method'] ?? 'diantar';
 $payment_method = $_POST['payment_method'] ?? 'transfer_bank';
 $catatan = mysqli_real_escape_string($conn, $_POST['catatan'] ?? '');
 
-// Inisialisasi variabel alamat (nullable jika diambil sendiri)
 $nama_penerima = null;
 $telepon = null;
 $alamat_lengkap = null;
-$shipping_cost = 0; // Default diambil = 0
+$shipping_cost = 0;
 
 if ($shipping_method === 'diantar') {
   $nama_penerima = mysqli_real_escape_string($conn, $_POST['nama_penerima'] ?? '');
   $telepon = mysqli_real_escape_string($conn, $_POST['telepon'] ?? '');
   $alamat_lengkap = mysqli_real_escape_string($conn, $_POST['alamat_lengkap'] ?? '');
-  $shipping_cost = 10000; // Ongkir jika diantar pegawai
+  $shipping_cost = 10000;
 }
 
 // 5. Hitung Total Harga Barang dari Database secara Valid
@@ -51,7 +50,7 @@ foreach ($carts as $cart) {
 }
 $grand_total = $total_items_price + $shipping_cost;
 
-// 6. Generate Nomor Invoice Unik (Format: INV - TAHUNBULANTANGGAL - JAMMENITDETIK)
+// 6. Generate Nomor Invoice Unik
 $invoice_number = "INV-" . date('Ymd') . "-" . date('His') . rand(10, 99);
 
 // 7. Mulai Simpan ke Database Menggunakan Prepared Statement
@@ -64,16 +63,24 @@ if (mysqli_stmt_execute($queryOrder)) {
   // Ambil ID pesanan yang baru saja dimasukkan
   $orderId = mysqli_insert_id($conn);
 
-  // Langkah B: Insert item-item keranjang ke tabel `order_details`
+  // Langkah B: Insert item-item keranjang ke tabel `order_details` DAN POTONG STOK
   $queryDetail = mysqli_prepare($conn, "INSERT INTO order_details (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)");
+
+  // Siapkan query untuk mengurangi stok produk
+  $queryUpdateStock = mysqli_prepare($conn, "UPDATE product SET stock = stock - ? WHERE id = ?");
 
   foreach ($carts as $cart) {
     $productId = (int) $cart['product_id'];
     $quantity = (int) $cart['quantity'];
     $price = (int) $cart['price'];
 
+    // 1. Simpan rincian ke order_details
     mysqli_stmt_bind_param($queryDetail, 'iiii', $orderId, $productId, $quantity, $price);
     mysqli_stmt_execute($queryDetail);
+
+    // 2. JALANKAN PENGURANGAN STOK DI SINI
+    mysqli_stmt_bind_param($queryUpdateStock, 'ii', $quantity, $productId);
+    mysqli_stmt_execute($queryUpdateStock);
   }
 
   // Langkah C: Kosongkan keranjang belanja milik user karena transaksi sudah berhasil dibuat

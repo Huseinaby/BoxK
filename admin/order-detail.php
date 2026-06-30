@@ -18,39 +18,40 @@ if ($orderId <= 0) {
   header('Location: orders.php');
   exit;
 }
-
-// 3. Proses Ganti Status & Potong Stok (Saat Form di-Submit Admin)
+// 3. Proses Ganti Status (Saat Form di-Submit Admin) - Menyesuaikan Pemotongan Stok di Checkout
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
   $statusBaru = $_POST['status'];
 
-  // Ambil status lama untuk pengecekan agar tidak memotong stok dua kali
+  // Ambil status lama dari database untuk pengecekan riwayat status
   $qCheck = mysqli_query($conn, "SELECT status FROM orders WHERE id = $orderId");
   $currentOrder = mysqli_fetch_assoc($qCheck);
   $statusLama = $currentOrder['status'];
 
-  // JIKA status berubah menjadi 'proses' (pembayaran disetujui), potong stok barang
-  if ($statusBaru === 'proses' && $statusLama === 'pending') {
-    // Ambil item produk dalam pesanan ini
+  // LOGIKA RESTOCK: Jika pesanan dibatalkan (dari status apa pun selain dibatalkan), kembalikan stoknya
+  if ($statusBaru === 'dibatalkan' && $statusLama !== 'dibatalkan') {
     $qItems = mysqli_query($conn, "SELECT product_id, quantity FROM order_details WHERE order_id = $orderId");
     while ($item = mysqli_fetch_assoc($qItems)) {
       $pId = $item['product_id'];
       $qty = $item['quantity'];
-      // Jalankan query pengurangan stok
-      mysqli_query($conn, "UPDATE product SET stock = stock - $qty WHERE id = $pId");
-    }
-  }
 
-  // JIKA status berubah dari 'proses' di-cancel ke 'dibatalkan', kembalikan stok barang
-  if ($statusBaru === 'dibatalkan' && $statusLama === 'proses') {
-    $qItems = mysqli_query($conn, "SELECT product_id, quantity FROM order_details WHERE order_id = $orderId");
-    while ($item = mysqli_fetch_assoc($qItems)) {
-      $pId = $item['product_id'];
-      $qty = $item['quantity'];
+      // Kembalikan sisa inventori ke tabel product
       mysqli_query($conn, "UPDATE product SET stock = stock + $qty WHERE id = $pId");
     }
   }
 
-  // Update status induk pesanan
+  // LOGIKA RE-REDUCE (Pengecualian): Jika admin mengaktifkan kembali pesanan yang tadinya sudah dibatalkan
+  if ($statusLama === 'dibatalkan' && $statusBaru !== 'dibatalkan') {
+    $qItems = mysqli_query($conn, "SELECT product_id, quantity FROM order_details WHERE order_id = $orderId");
+    while ($item = mysqli_fetch_assoc($qItems)) {
+      $pId = $item['product_id'];
+      $qty = $item['quantity'];
+
+      // Kurangi stok kembali karena pesanan diaktifkan lagi
+      mysqli_query($conn, "UPDATE product SET stock = stock - $qty WHERE id = $pId");
+    }
+  }
+
+  // Update status induk pesanan ke database
   $updateStatus = mysqli_query($conn, "UPDATE orders SET status = '$statusBaru' WHERE id = $orderId");
 
   if ($updateStatus) {
@@ -198,8 +199,7 @@ $queryDetails = mysqli_query($conn, "
           class="fa fa-shopping-cart me-2"></i> Pesanan</a>
       <?php if (isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'owner'): ?>
         <a href="sales-report.php"><i class="fa fa-chart-line me-2"></i> Laporan Penjualan</a>
-        <a href="shop-setting.php" style="background-color: rgba(0,0,0,0.1); font-weight: bold;"><i
-            class="fa fa-store me-2"></i> Kelola Toko</a>
+        <a href="shop-setting.php"><i class="fa fa-store me-2"></i> Kelola Toko</a>
         <a href="admin-manage.php"><i class="fa fa-user-gear me-2"></i> Kelola Admin</a>
       <?php endif; ?>
     </div>
