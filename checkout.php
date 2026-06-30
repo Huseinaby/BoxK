@@ -189,7 +189,7 @@ $ongkosKirimDefault = 10000;
                     value="transfer_bank" checked>
                   <label class="form-check-label ms-3 fw-bold" for="payBank">
                     Transfer Bank (Manual)
-                    <small class="d-block text-muted fw-normal mt-1">Transfer ke Rekening BCA: 123-4567-890 a/n
+                    <small class="d-block text-muted fw-normal mt-1">Transfer ke Rekening
                       BoxKado</small>
                   </label>
                 </div>
@@ -198,8 +198,8 @@ $ongkosKirimDefault = 10000;
                   <input class="form-check-input ms-1" type="radio" name="payment_method" id="payDigital"
                     value="dompet_digital">
                   <label class="form-check-label ms-3 fw-bold" for="payDigital">
-                    Dompet Digital (QRIS / E-Wallet)
-                    <small class="d-block text-muted fw-normal mt-1">Scan QRIS Dana / GoPay / OVO BoxKado saat
+                    QRIS
+                    <small class="d-block text-muted fw-normal mt-1">Scan QRIS BoxKado saat
                       konfirmasi.</small>
                   </label>
                 </div>
