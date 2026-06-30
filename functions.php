@@ -632,8 +632,9 @@ function getCartItems($userId = null)
         $userId = (int) $userId;
     }
 
+    // Perbaikan: Menambahkan product.stock ke dalam daftar SELECT
     $query = "SELECT carts.id AS cart_id, carts.quantity, product.id AS product_id, 
-                     product.name, product.price, product.image, product.status 
+                     product.name, product.price, product.image, product.status, product.stock 
               FROM carts 
               JOIN product ON carts.product_id = product.id 
               WHERE carts.user_id = $userId 

@@ -202,8 +202,12 @@ $total = 0;
                         <input type="number" class="form-control text-center custom-qty-input bg-white"
                           value="<?= $cart['quantity'] ?>" min="1" readonly style="max-width: 60px;">
 
+                        <?php
+                        $stokProduk = isset($cart['stock']) ? (int) $cart['stock'] : 0;
+                        ?>
+
                         <button type="button" class="btn btn-outline-secondary px-2 py-1"
-                          onclick="changeQty(this, 1, <?= $cartId ?>)">
+                          onclick="changeQty(this, 1, <?= $cartId ?>, <?= $stokProduk ?>)">
                           <i class="fa fa-plus"></i>
                         </button>
                       </div>
@@ -342,17 +346,19 @@ $total = 0;
         });
     }
 
-    function changeQty(button, change, cartId) {
-      // Mencari input terdekat di dalam grupnya
+    function changeQty(button, change, cartId, maxStock) {
       const input = button.parentElement.querySelector('.custom-qty-input');
       let currentVal = parseInt(input.value) || 1;
-
       let newVal = currentVal + change;
 
-      // Batasi agar jumlah tidak boleh kurang dari 1
+      // Jika menekan plus dan melebihi stok, cegah eksekusi
+      if (change > 0 && newVal > maxStock) {
+        alert('Maaf, jumlah komoditas melebihi sisa stok yang tersedia (' + maxStock + ' pcs).');
+        return;
+      }
+
       if (newVal >= 1) {
         input.value = newVal;
-        // Panggil fungsi utama update ke database
         updateCartQuantity(cartId, newVal);
       }
     }
