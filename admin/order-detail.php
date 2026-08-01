@@ -378,7 +378,8 @@ $queryDetails = mysqli_query($conn, "
                 <div class="mb-3">
                   <label class="form-label small fw-bold text-dark">Nomor Tracking</label>
                   <input type="text" name="tracking_number" class="form-control"
-                    value="<?= htmlspecialchars($order['tracking_number'] ?? '') ?>" placeholder="Masukkan nomor resi">
+                    value="<?= htmlspecialchars($order['tracking_number'] ?? '') ?>"
+                    placeholder="Masukkan nomor resi/link tracking">
                 </div>
               <?php endif; ?>
 
