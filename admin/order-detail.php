@@ -78,31 +78,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
   }
 
   if ($updateStatus) {
-    echo "<script>
-      Swal.fire({
-        icon: 'success',
-        title: 'Berhasil',
-        text: 'Status pesanan berhasil diperbarui!',
-        timer: 1800,
-        showConfirmButton: false
-      }).then(() => {
-        window.location.href = 'order-detail.php?id=$orderId';
-      });
-    </script>";
+    header('Location: order-detail.php?id=' . $orderId . '&notice=success');
     exit;
   }
 
-  echo "<script>
-    Swal.fire({
-      icon: 'error',
-      title: 'Gagal',
-      text: 'Status pesanan gagal diperbarui. Silakan coba lagi.',
-      timer: 2200,
-      showConfirmButton: false
-    }).then(() => {
-      window.location.href = 'order-detail.php?id=$orderId';
-    });
-  </script>";
+  header('Location: order-detail.php?id=' . $orderId . '&notice=error');
   exit;
 }
 
@@ -411,6 +391,33 @@ $queryDetails = mysqli_query($conn, "
       </div>
     </div>
   </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const notice = params.get('notice');
+
+    if (notice === 'success') {
+      Swal.fire({
+        icon: 'success',
+        title: 'Berhasil',
+        text: 'Status pesanan berhasil diperbarui!',
+        timer: 1800,
+        showConfirmButton: false
+      });
+      const cleanUrl = window.location.pathname + '?id=' + params.get('id');
+      window.history.replaceState({}, document.title, cleanUrl);
+    } else if (notice === 'error') {
+      Swal.fire({
+        icon: 'error',
+        title: 'Gagal',
+        text: 'Status pesanan gagal diperbarui. Silakan coba lagi.',
+        timer: 2200,
+        showConfirmButton: false
+      });
+      const cleanUrl = window.location.pathname + '?id=' + params.get('id');
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+  </script>
 
 </body>
 
