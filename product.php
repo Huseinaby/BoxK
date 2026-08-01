@@ -170,43 +170,67 @@ $products = getProductLimit();
                         <div class="modal fade" id="productModal<?= $product['id'] ?>" tabindex="-1" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered modal-lg">
                                 <div class="modal-content border-0 shadow">
-                                    <div class="modal-header border-0 pb-0">
-                                        <h5 class="modal-title fw-bold text-dark">
-                                            <?= htmlspecialchars($product['name']) ?>
-                                        </h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body p-4">
-                                        <div class="row g-4">
-                                            <div class="col-md-5">
-                                                <img src="assets/uploads/<?= htmlspecialchars($product['image']) ?>"
-                                                    class="modal-product-image"
-                                                    alt="<?= htmlspecialchars($product['name']) ?>">
-                                            </div>
-                                            <div class="col-md-7">
-                                                <span class="badge category-badge mb-3">
+                                    <div class="modal-header border-0 pb-3 px-4 pt-4">
+                                        <div class="d-flex align-items-start justify-content-between w-100 gap-3">
+                                            <div>
+                                                <span class="badge category-badge mb-2">
                                                     <i
                                                         class="fa fa-tag me-1"></i><?= htmlspecialchars($product['category'] ?? '-') ?>
                                                 </span>
-                                                <p class="mb-2"><strong>Harga:</strong> Rp
-                                                    <?= number_format($product['price'], 0, ',', '.') ?>
-                                                </p>
-                                                <p class="mb-2"><strong>Warna:</strong>
-                                                    <?= htmlspecialchars($product['color'] ?? '-') ?>
-                                                </p>
-                                                <p class="mb-2"><strong>Ukuran:</strong>
-                                                    <?= htmlspecialchars($product['size'] ?? '-') ?>
-                                                </p>
-                                                <p class="mb-2"><strong>Stok:</strong> <?= (int) ($product['stock'] ?? 0) ?>
-                                                </p>
-                                                <p class="mb-0 text-muted">
-                                                    <?= nl2br(htmlspecialchars($product['about'] ?? '-')) ?>
-                                                </p>
+                                                <h3 class="modal-title fw-bold text-dark mb-0 product-modal-title">
+                                                    <?= htmlspecialchars($product['name']) ?>
+                                                </h3>
+                                            </div>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
+                                    </div>
+                                    <div class="modal-body p-4">
+                                        <div class="row g-4 align-items-stretch">
+                                            <div class="col-md-5">
+                                                <div class="modal-image-card">
+                                                    <img src="assets/uploads/<?= htmlspecialchars($product['image']) ?>"
+                                                        class="modal-product-image"
+                                                        alt="<?= htmlspecialchars($product['name']) ?>">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-7">
+                                                <div class="product-info-card">
+                                                    <div class="price-highlight mb-3">
+                                                        <i class="fa fa-tag me-2"></i>Rp
+                                                        <?= number_format($product['price'], 0, ',', '.') ?>
+                                                    </div>
+
+                                                    <div class="detail-grid">
+                                                        <div class="detail-item">
+                                                            <strong>Warna</strong>
+                                                            <span><?= htmlspecialchars($product['color'] ?? '-') ?></span>
+                                                        </div>
+                                                        <div class="detail-item">
+                                                            <strong>Ukuran</strong>
+                                                            <span><?= htmlspecialchars($product['size'] ?? '-') ?></span>
+                                                        </div>
+                                                        <div class="detail-item">
+                                                            <strong>Stok</strong>
+                                                            <span><?= (int) ($product['stock'] ?? 0) ?></span>
+                                                        </div>
+                                                        <div class="detail-item">
+                                                            <strong>Kategori</strong>
+                                                            <span><?= htmlspecialchars($product['category'] ?? '-') ?></span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="detail-description">
+                                                        <h6>Deskripsi Produk</h6>
+                                                        <p class="mb-0 text-muted">
+                                                            <?= nl2br(htmlspecialchars($product['about'] ?? '-')) ?>
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="modal-footer border-0 pt-0">
+                                    <div class="modal-footer border-0 pt-0 px-4 pb-4">
                                         <button type="button" class="btn btn-secondary"
                                             data-bs-dismiss="modal">Tutup</button>
                                     </div>

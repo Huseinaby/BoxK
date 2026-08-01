@@ -1,151 +1,227 @@
-/* Styling Card Utama */
-.product-card {
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
+  /* Styling Card Utama */
+  .product-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
 
-.product-inner-card {
-  border: none;
-  border-radius: 16px;
-  overflow: hidden;
-  background: #ffffff;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-}
+  .product-inner-card {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #ffffff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+  }
 
-.product-card:hover .product-inner-card {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
-}
+  .product-card:hover .product-inner-card {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  }
 
-/* Area Gambar Produk */
-.product-img-wrapper {
-  width: 100%;
-  height: 200px;
-  background-color: #f8f9fa;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+  /* Area Gambar Produk */
+  .product-img-wrapper {
+    width: 100%;
+    height: 200px;
+    background-color: #f8f9fa;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-.product-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  /* Gunakan 'cover' agar gambar memenuhi area secara estetis, atau 'contain' jika bentuk kado harus utuh */
-  transition: transform 0.3s ease;
-}
+  .product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Gunakan 'cover' agar gambar memenuhi area secara estetis, atau 'contain' jika bentuk kado harus utuh */
+    transition: transform 0.3s ease;
+  }
 
-.product-card:hover .product-image {
-  transform: scale(1.04);
-}
+  .product-card:hover .product-image {
+    transform: scale(1.04);
+  }
 
-/* Badge Kategori */
-.category-badge {
-  background-color: #fff0f5;
-  color: #ff74a4;
-  border: 1px solid #ffbcd3;
-  border-radius: 20px;
-  padding: 6px 12px;
-  font-size: 11px;
-  font-weight: 600;
-  display: inline-block;
-  width: fit-content;
-}
+  /* Badge Kategori */
+  .category-badge {
+    background-color: #fff0f5;
+    color: #ff74a4;
+    border: 1px solid #ffbcd3;
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-block;
+    width: fit-content;
+  }
 
-/* Judul Produk */
-.card-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #2c3e50;
-  line-height: 1.4;
-  min-height: 42px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
+  /* Judul Produk */
+  .card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #2c3e50;
+    line-height: 1.4;
+    min-height: 42px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 
-/* Harga Produk */
-.price {
-  color: #ff74a4;
-  font-size: 18px;
-  font-weight: 700;
-  margin-top: 2px;
-  margin-bottom: 8px;
-}
+  /* Harga Produk */
+  .price {
+    color: #ff74a4;
+    font-size: 18px;
+    font-weight: 700;
+    margin-top: 2px;
+    margin-bottom: 8px;
+  }
 
-/* Tombol Detail */
-.btn-detail {
-  background: #ff74a4;
-  color: #ffffff;
-  border: none;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-}
+  /* Tombol Detail */
+  .btn-detail {
+    background: #ff74a4;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+  }
 
-.btn-detail:hover {
-  background: #e65c8c;
-  color: #ffffff;
-}
+  .btn-detail:hover {
+    background: #e65c8c;
+    color: #ffffff;
+  }
 
-.btn-detail:active {
-  transform: scale(0.98);
-}
+  .btn-detail:active {
+    transform: scale(0.98);
+  }
 
-/* Modal Detail Produk */
-.modal-content {
-  border: none;
-  border-radius: 18px;
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.2);
-}
+  /* Modal Detail Produk */
+  .modal-content {
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
+  }
 
-.modal-header,
-.modal-footer {
-  background: #fff;
-}
+  .modal-header {
+    background: #fff;
+    padding: 1.1rem 1.25rem 0.6rem;
+  }
 
-.modal-product-image {
-  width: 100%;
-  height: 260px;
-  object-fit: cover;
-  border-radius: 14px;
-  background: #f8f9fa;
-}
+  .modal-footer {
+    background: #fff;
+    padding-top: 0;
+  }
 
-.modal-body p {
-  color: #555;
-  line-height: 1.7;
-}
+  .product-modal-title {
+    font-size: 1.4rem;
+    line-height: 1.3;
+    color: #2f2f2f;
+  }
 
-.modal .btn-close {
-  background-color: #fff0f5;
-  border: 1px solid #f6c2d7;
-  border-radius: 50%;
-  opacity: 1;
-  padding: 0.45rem;
-  width: 38px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
+  .modal-image-card {
+    padding: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fff;
+  }
 
-.modal .btn-close:hover {
-  background-color: #ff74a4;
-  border-color: #ff74a4;
-  transform: rotate(90deg);
-}
+  .modal-product-image {
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+    background: #f8f9fa;
+  }
 
-.modal .btn-close:focus {
-  box-shadow: 0 0 0 0.2rem rgba(255, 116, 164, 0.25);
-}
+  .product-info-card {
+    padding: 0.2rem 0;
+    background: #fff;
+  }
 
-.modal .btn-secondary {
-  border: none;
-  background: #6c757d;
-}
+  .price-highlight {
+    display: inline-block;
+    color: #ff74a4;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .detail-item {
+    padding: 0.55rem 0.65rem;
+    border-radius: 10px;
+    background: #fafafa;
+  }
+
+  .detail-item strong {
+    display: block;
+    margin-bottom: 0.15rem;
+    font-size: 0.72rem;
+    color: #ff74a4;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .detail-item span {
+    color: #555;
+    font-size: 0.92rem;
+  }
+
+  .detail-description {
+    border-top: 1px solid #f0f0f0;
+    padding-top: 0.8rem;
+  }
+
+  .detail-description h6 {
+    margin-bottom: 0.35rem;
+    font-weight: 700;
+    color: #2f2f2f;
+    font-size: 0.95rem;
+  }
+
+  .modal-body p {
+    color: #666;
+    line-height: 1.6;
+    font-size: 0.95rem;
+  }
+
+  .modal .btn-close {
+    background-color: #f7f7f7;
+    border: none;
+    border-radius: 50%;
+    opacity: 1;
+    padding: 0.35rem;
+    width: 34px;
+    height: 34px;
+  }
+
+  .modal .btn-close:hover {
+    background-color: #f0f0f0;
+  }
+
+  .modal .btn-secondary {
+    border: none;
+    background: #6c757d;
+    border-radius: 10px;
+  }
+
+  @media (max-width: 576px) {
+    .product-modal-title {
+      font-size: 1.2rem;
+    }
+
+    .detail-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .modal-product-image {
+      height: 220px;
+    }
+  }
