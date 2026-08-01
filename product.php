@@ -39,6 +39,7 @@ $products = getProductLimit();
     <!-- Tweaks for older IEs-->
     <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -126,79 +127,102 @@ $products = getProductLimit();
                 </div>
                 <div class="row" id="productContainer">
                     <?php foreach ($products as $product): ?>
-                        <div class="col-md-3 mb-3 product-card"
+                        <div class="col-lg-3 col-md-4 col-sm-6 mb-4 product-card"
                             data-category="<?= htmlspecialchars($product['category']) ?>"
                             data-name="<?= strtolower(htmlspecialchars($product['name'])) ?>">
-                            <div class="card h-100" style="cursor: pointer;" data-bs-toggle="modal"
-                                data-bs-target="#productModal<?= $product['id'] ?>">
-                                <img src="assets/uploads/<?= htmlspecialchars($product['image']) ?>" class="card-img-top"
-                                    alt="<?= htmlspecialchars($product['name']) ?>">
-                                <div class="card-body">
-                                    <h5 class="card-title"><?= htmlspecialchars($product['name']) ?></h5>
-                                    <p class="card-text" style="color: #ff74a4; font-weight: bold;">
-                                        Rp <?= number_format($product['price'], 0, ',', '.') ?>
-                                    </p>
+                            <div class="card h-100 product-inner-card">
+
+                                <!-- Container Gambar -->
+                                <div class="product-img-wrapper">
+                                    <img src="assets/uploads/<?= htmlspecialchars($product['image']) ?>"
+                                        class="product-image" alt="<?= htmlspecialchars($product['name']) ?>">
                                 </div>
+
+                                <div class="card-body d-flex flex-column p-3">
+                                    <!-- Badge Kategori di Atas Judul -->
+                                    <div class="mb-2">
+                                        <span class="badge category-badge">
+                                            <i class="fa fa-tag me-1"></i><?= htmlspecialchars($product['category']) ?>
+                                        </span>
+                                    </div>
+
+                                    <!-- Judul Produk -->
+                                    <h5 class="card-title text-truncate-2 mb-1"
+                                        title="<?= htmlspecialchars($product['name']) ?>">
+                                        <?= htmlspecialchars($product['name']) ?>
+                                    </h5>
+
+                                    <!-- Harga Produk -->
+                                    <div class="price mb-2">
+                                        Rp <?= number_format($product['price'], 0, ',', '.') ?>
+                                    </div>
+
+                                    <!-- Tombol Detail -->
+                                    <button class="btn btn-detail w-100 mt-auto py-2" data-bs-toggle="modal"
+                                        data-bs-target="#productModal<?= $product['id'] ?>">
+                                        <i class="fa fa-eye me-2"></i>Lihat Detail
+                                    </button>
+                                </div>
+
                             </div>
                         </div>
 
-                        <!-- Modal Detail Produk -->
-                        <div class="modal fade" id="productModal<?= $product['id'] ?>" tabindex="-1"
-                            aria-labelledby="productModalLabel<?= $product['id'] ?>" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="productModalLabel<?= $product['id'] ?>">
+                        <div class="modal fade" id="productModal<?= $product['id'] ?>" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <div class="modal-content border-0 shadow">
+                                    <div class="modal-header border-0 pb-0">
+                                        <h5 class="modal-title fw-bold text-dark">
                                             <?= htmlspecialchars($product['name']) ?>
                                         </h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"
                                             aria-label="Close"></button>
                                     </div>
-                                    <div class="modal-body">
-                                        <img src="assets/uploads/<?= htmlspecialchars($product['image']) ?>"
-                                            class="img-fluid mb-3" alt="<?= htmlspecialchars($product['name']) ?>">
-                                        <p><strong>Tentang Produk:</strong>
-                                            <?= nl2br(htmlspecialchars($product['about'])) ?></p>
-                                        <p><strong>Warna:</strong> <?= htmlspecialchars($product['color']) ?></p>
-                                        <p><strong>Ukuran:</strong> <?= htmlspecialchars($product['size']) ?></p>
-                                        <p><strong>Kategori:</strong> <?= htmlspecialchars($product['category']) ?></p>
-                                        <p><strong>Harga:</strong> Rp <?= number_format($product['price'], 0, ',', '.') ?>
-                                        </p>
-
-                                        <p><strong>Stok Tersedia:</strong> <?= (int) $product['stock'] ?> pcs</p>
-
-                                        <p><strong>Status:</strong>
-                                            <span
-                                                class="badge bg-<?= $product['status'] === 'tersedia' ? 'success' : 'danger' ?>">
-                                                <?= ucfirst($product['status']) ?>
-                                            </span>
-                                        </p>
+                                    <div class="modal-body p-4">
+                                        <div class="row g-4">
+                                            <div class="col-md-5">
+                                                <img src="assets/uploads/<?= htmlspecialchars($product['image']) ?>"
+                                                    class="modal-product-image"
+                                                    alt="<?= htmlspecialchars($product['name']) ?>">
+                                            </div>
+                                            <div class="col-md-7">
+                                                <span class="badge category-badge mb-3">
+                                                    <i
+                                                        class="fa fa-tag me-1"></i><?= htmlspecialchars($product['category'] ?? '-') ?>
+                                                </span>
+                                                <p class="mb-2"><strong>Harga:</strong> Rp
+                                                    <?= number_format($product['price'], 0, ',', '.') ?>
+                                                </p>
+                                                <p class="mb-2"><strong>Warna:</strong>
+                                                    <?= htmlspecialchars($product['color'] ?? '-') ?>
+                                                </p>
+                                                <p class="mb-2"><strong>Ukuran:</strong>
+                                                    <?= htmlspecialchars($product['size'] ?? '-') ?>
+                                                </p>
+                                                <p class="mb-2"><strong>Stok:</strong> <?= (int) ($product['stock'] ?? 0) ?>
+                                                </p>
+                                                <p class="mb-0 text-muted">
+                                                    <?= nl2br(htmlspecialchars($product['about'] ?? '-')) ?>
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="modal-footer">
+                                    <div class="modal-footer border-0 pt-0">
                                         <button type="button" class="btn btn-secondary"
                                             data-bs-dismiss="modal">Tutup</button>
-                                        <?php if ($product['status'] === 'tersedia'): ?>
-                                            <?php if ($user): ?>
-                                                <form onsubmit="addCartAjax(event, <?= $product['id'] ?>)">
-                                                    <input type="hidden" name="action" value="addToCart">
-                                                    <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
-                                                    <input type="hidden" name="quantity" value=1>
-                                                    <button type="submit" class="btn text-white" style="background-color: #ff74a4">
-                                                        <i class="fa fa-shopping-cart"></i>Masukkan ke keranjang</button>
-                                                </form>
-                                            <?php else: ?>
-                                                <a href="admin/index.php" class="btn btn-warning text-dark fw-bold">
-                                                    <i class="fa fa-sign-in"></i> Login untuk Membeli
-                                                </a>
-                                            <?php endif; ?>
-                                        <?php else: ?>
-                                            <button class="btn btn-danger" disabled>Stok Habis</button>
-                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     <?php endforeach; ?>
+                </div>
+
+                <div id="emptyState" class="text-center py-5 my-4 d-none" style="min-height: 220px;">
+                    <div class="d-inline-flex flex-column align-items-center justify-content-center px-4 py-5 rounded-4"
+                        style="background: #fff8fb; border: 1px dashed #f4b8cc; max-width: 500px; margin: 0 auto;">
+                        <i class="fa fa-search" style="font-size: 40px; color: #ff74a4;"></i>
+                        <h5 class="mt-3 mb-2 text-dark">Produk tidak ditemukan</h5>
+                        <p class="mb-0 text-muted">Coba ubah kata kunci atau pilih kategori lain.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -228,6 +252,8 @@ $products = getProductLimit();
             var selectedCategory = document.getElementById('categoryFilter').value.toLowerCase();
             var searchText = document.getElementById('searchInput').value.toLowerCase();
             var products = document.querySelectorAll('.product-card');
+            var visibleCount = 0;
+            var emptyState = document.getElementById('emptyState');
 
             products.forEach(function (product) {
                 var productCategory = product.getAttribute('data-category').toLowerCase();
@@ -235,13 +261,15 @@ $products = getProductLimit();
 
                 var matchCategory = selectedCategory === "all" || productCategory === selectedCategory;
                 var matchSearch = searchText === "" || productName.includes(searchText);
+                var isVisible = matchCategory && matchSearch;
 
-                if (matchCategory && matchSearch) {
-                    product.style.display = "block";
-                } else {
-                    product.style.display = "none";
-                }
+                product.style.display = isVisible ? "block" : "none";
+                if (isVisible) visibleCount++;
             });
+
+            if (emptyState) {
+                emptyState.classList.toggle('d-none', visibleCount > 0);
+            }
         }
 
         function addCartAjax(event, productId) {
