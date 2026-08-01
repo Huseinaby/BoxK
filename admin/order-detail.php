@@ -361,7 +361,8 @@ $queryDetails = mysqli_query($conn, "
                   </option>
                   <option value="proses" <?= $order['status'] === 'proses' ? 'selected' : '' ?>>Proses (Bayar Valid &
                     Potong Stok)</option>
-                  <option value="diantar" <?= $order['status'] === 'diantar' ? 'selected' : '' ?>>Diantar (Sedang Dalam Pengiriman)</option>
+                  <option value="diantar" <?= $order['status'] === 'diantar' ? 'selected' : '' ?>>Diantar (Sedang Dalam
+                    Pengiriman)</option>
                   <option value="selesai" <?= $order['status'] === 'selesai' ? 'selected' : '' ?>>Selesai (Kado
                     Sampai/Diambil)</option>
                   <option value="dibatalkan" <?= $order['status'] === 'dibatalkan' ? 'selected' : '' ?>>Dibatalkan</option>
@@ -371,11 +372,13 @@ $queryDetails = mysqli_query($conn, "
               <?php if ($order['shipping_method'] === 'diantar'): ?>
                 <div class="mb-3">
                   <label class="form-label small fw-bold text-dark">Kurir</label>
-                  <input type="text" name="courier" class="form-control" value="<?= htmlspecialchars($order['courier'] ?? '') ?>" placeholder="Contoh: JNE, POS, Grab">
+                  <input type="text" name="courier" class="form-control"
+                    value="<?= htmlspecialchars($order['courier'] ?? '') ?>" placeholder="Contoh: JNE, POS, Grab">
                 </div>
                 <div class="mb-3">
                   <label class="form-label small fw-bold text-dark">Nomor Tracking</label>
-                  <input type="text" name="tracking_number" class="form-control" value="<?= htmlspecialchars($order['tracking_number'] ?? '') ?>" placeholder="Masukkan nomor resi">
+                  <input type="text" name="tracking_number" class="form-control"
+                    value="<?= htmlspecialchars($order['tracking_number'] ?? '') ?>" placeholder="Masukkan nomor resi">
                 </div>
               <?php endif; ?>
 
