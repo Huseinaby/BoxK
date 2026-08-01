@@ -67,6 +67,11 @@ $result = mysqli_stmt_get_result($query);
       background-color: #dc3545;
       color: #fff;
     }
+
+    .badge-diantar {
+      background-color: #0dcaf0;
+      color: #000;
+    }
   </style>
 </head>
 

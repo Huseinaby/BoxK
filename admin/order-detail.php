@@ -356,10 +356,21 @@ $queryDetails = mysqli_query($conn, "
                     value="<?= htmlspecialchars($order['courier'] ?? '') ?>" placeholder="Contoh: JNE, POS, Grab">
                 </div>
                 <div class="mb-3">
-                  <label class="form-label small fw-bold text-dark">Nomor Tracking</label>
+                  <label class="form-label small fw-bold text-dark">Nomor Resi / Link Tracking</label>
                   <input type="text" name="tracking_number" class="form-control"
                     value="<?= htmlspecialchars($order['tracking_number'] ?? '') ?>"
-                    placeholder="Masukkan nomor resi/link tracking">
+                    placeholder="Masukkan nomor resi atau link tracking">
+                  <?php
+                  $trackingValue = trim((string) ($order['tracking_number'] ?? ''));
+                  if (!empty($trackingValue)):
+                    $trackingIsUrl = preg_match('/^https?:\/\//i', $trackingValue) === 1;
+                    $trackingHost = '';
+                    if ($trackingIsUrl) {
+                      $parsedUrl = parse_url($trackingValue);
+                      $trackingHost = $parsedUrl['host'] ?? '';
+                    }
+                    ?>
+                  <?php endif; ?>
                 </div>
               <?php endif; ?>
 

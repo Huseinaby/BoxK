@@ -105,6 +105,50 @@ if (!$shop) {
     .border-pink {
       border-color: #ff74a4 !important;
     }
+
+    .delivery-info-card {
+      background: linear-gradient(135deg, #fff7fb 0%, #ffffff 100%);
+      border: 1px solid #f4dce7;
+      border-radius: 14px;
+      padding: 0.9rem 1rem;
+      margin-top: 0.7rem;
+      box-shadow: 0 4px 12px rgba(255, 116, 164, 0.08);
+    }
+
+    .delivery-info-label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #ff74a4;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+    }
+
+    .delivery-info-value {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #2f2f2f;
+    }
+
+    .copy-btn {
+      border: none;
+      background: #ff74a4;
+      color: #fff;
+      border-radius: 8px;
+      padding: 0.35rem 0.7rem;
+      font-size: 0.85rem;
+      transition: background 0.2s ease;
+    }
+
+    .copy-btn:hover {
+      background: #e95f93;
+      color: #fff;
+    }
+
+    .copy-btn.success {
+      background: #198754;
+      color: #fff;
+    }
   </style>
 </head>
 
@@ -170,7 +214,8 @@ if (!$shop) {
             <div class="alert alert-success text-center py-3 mb-4 border-0 shadow-sm">
               <h4 class="fw-bold mb-1"><i class="fa fa-check-circle me-2"></i>Pesanan Selesai</h4>
               <p class="mb-0 small text-muted">Kado telah diterima/diambil. Terima kasih banyak telah memercayakan
-                <?= htmlspecialchars($shop['shop_name']) ?>!</p>
+                <?= htmlspecialchars($shop['shop_name']) ?>!
+              </p>
             </div>
           <?php elseif ($order['status'] === 'dibatalkan'): ?>
             <div class="alert alert-danger text-center py-3 mb-4 border-0 shadow-sm">
@@ -190,6 +235,34 @@ if (!$shop) {
               <span class="badge px-3 py-2 fs-6 badge-<?= htmlspecialchars($order['status']) ?>">
                 Status: <?= ucfirst(htmlspecialchars($order['status'])) ?>
               </span>
+              <?php if ($order['shipping_method'] === 'diantar'): ?>
+                <div class="delivery-info-card mt-3">
+                  <div class="delivery-info-label">Kurir</div>
+                  <div class="delivery-info-value"><?= htmlspecialchars($order['courier'] ?? '-') ?></div>
+                  <div class="delivery-info-label mt-3">Nomor Tracking</div>
+                  <div class="d-flex align-items-center justify-content-between gap-2 mt-1">
+                    <div class="delivery-info-value flex-grow-1">
+                      <?php
+                      $trackingValue = trim((string) ($order['tracking_number'] ?? ''));
+                      $trackingIsUrl = !empty($trackingValue) && preg_match('/^https?:\/\//i', $trackingValue) === 1;
+                      if ($trackingIsUrl):
+                        echo '<span class="text-muted">Link tracking</span>';
+                      else:
+                        echo htmlspecialchars($trackingValue ?: '-');
+                      endif;
+                      ?>
+                    </div>
+                    <?php if (!empty($trackingValue)): ?>
+                      <button type="button" class="copy-btn"
+                        data-original-label="<?= $trackingIsUrl ? 'Salin Link Tracking' : 'Salin' ?>"
+                        onclick='copyTrackingValue(<?= json_encode($trackingValue, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>, this)'>
+                        <i class="fa fa-copy me-1"></i>
+                        <span class="copy-btn-label"><?= $trackingIsUrl ? 'Salin Link Tracking' : 'Salin' ?></span>
+                      </button>
+                    <?php endif; ?>
+                  </div>
+                </div>
+              <?php endif; ?>
               <div class="text-muted small mt-1">Tanggal: <?= date('d M Y, H:i', strtotime($order['created_at'])) ?>
               </div>
             </div>
@@ -212,7 +285,8 @@ if (!$shop) {
                 </p>
               <?php else: ?>
                 <p class="mb-0 text-muted small">Silakan datang langsung ke toko offline
-                  <strong><?= htmlspecialchars($shop['shop_name']) ?></strong> untuk mengambil pesanan Anda.</p>
+                  <strong><?= htmlspecialchars($shop['shop_name']) ?></strong> untuk mengambil pesanan Anda.
+                </p>
                 <?php if (!empty($shop['address'])): ?>
                   <small class="text-muted d-block mt-1"><i class="fa fa-location-dot me-1"></i> Lokasi:
                     <?= htmlspecialchars($shop['address']) ?></small>
@@ -241,7 +315,7 @@ if (!$shop) {
                   if (mysqli_num_rows($banks) == 0):
                     ?>
                     <span class="text-muted small d-block"><i>Belum ada rekening bank yang dikonfigurasi owner.</i></span>
-                  <?php
+                    <?php
                   else:
                     while ($b = mysqli_fetch_assoc($banks)):
                       ?>
@@ -250,7 +324,7 @@ if (!$shop) {
                           <?= htmlspecialchars($b['account_number']) ?></span>
                         <small class="text-muted d-block">a.n. <?= htmlspecialchars($b['account_name']) ?></small>
                       </div>
-                    <?php
+                      <?php
                     endwhile;
                   endif;
                   ?>
@@ -318,7 +392,8 @@ if (!$shop) {
                 <tr class="fs-5 fw-bold">
                   <td colspan="3" class="text-end border-0 pt-2">Total Pembayaran:</td>
                   <td class="text-end border-0 pt-2" style="color: #ff74a4;">Rp
-                    <?= number_format($order['grand_total'], 0, ',', '.') ?></td>
+                    <?= number_format($order['grand_total'], 0, ',', '.') ?>
+                  </td>
                 </tr>
               </tfoot>
             </table>
@@ -435,6 +510,50 @@ if (!$shop) {
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     let cancelModalInstance = null;
+
+    function copyTrackingValue(value, button) {
+      if (!value) return;
+
+      const textToCopy = String(value);
+
+      const markSuccess = () => {
+        if (button) {
+          button.classList.add('success');
+          const label = button.querySelector('.copy-btn-label');
+          if (label) {
+            label.textContent = 'Tersalin';
+          }
+          setTimeout(() => {
+            button.classList.remove('success');
+            if (label) {
+              label.textContent = button.dataset.originalLabel || 'Salin';
+            }
+          }, 1500);
+        }
+      };
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(textToCopy).then(markSuccess).catch(() => {
+          fallbackCopyText(textToCopy);
+          markSuccess();
+        });
+      } else {
+        fallbackCopyText(textToCopy);
+        markSuccess();
+      }
+    }
+
+    function fallbackCopyText(text) {
+      const tempInput = document.createElement('textarea');
+      tempInput.value = text;
+      tempInput.setAttribute('readonly', '');
+      tempInput.style.position = 'fixed';
+      tempInput.style.top = '-9999px';
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+    }
 
     function cancelOrder(orderId) {
       const cancelModalElement = document.getElementById('cancelConfirmModal');

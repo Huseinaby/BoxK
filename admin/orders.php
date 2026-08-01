@@ -85,6 +85,41 @@ $query = mysqli_query($conn, "
       border-radius: 12px;
     }
 
+    .order-status-badge {
+      display: inline-block;
+      padding: 0.45rem 0.8rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .order-status-pending {
+      background-color: #ffe082;
+      color: #7a4f00;
+    }
+
+    .order-status-proses {
+      background-color: #74b9ff;
+      color: #ffffff;
+    }
+
+    .order-status-diantar {
+      background-color: #4fc3f7;
+      color: #ffffff;
+    }
+
+    .order-status-selesai {
+      background-color: #66bb6a;
+      color: #ffffff;
+    }
+
+    .order-status-dibatalkan {
+      background-color: #ef5350;
+      color: #ffffff;
+    }
+
     @media (max-width: 768px) {
       .sidebar {
         width: 100%;
@@ -184,18 +219,29 @@ $query = mysqli_query($conn, "
                   </td>
                   <td class="text-center">
                     <?php
-                    $badgeColor = 'secondary';
-                    if ($row['status'] === 'pending')
-                      $badgeColor = 'warning text-dark';
-                    elseif ($row['status'] === 'proses')
-                      $badgeColor = 'primary';
-                    elseif ($row['status'] === 'selesai')
-                      $badgeColor = 'success';
-                    elseif ($row['status'] === 'dibatalkan')
-                      $badgeColor = 'danger';
+                    $statusValue = strtolower(trim((string) ($row['status'] ?? '')));
+                    $badgeClass = 'bg-secondary text-white';
+
+                    switch ($statusValue) {
+                      case 'pending':
+                        $badgeClass = 'bg-warning text-dark';
+                        break;
+                      case 'proses':
+                        $badgeClass = 'bg-primary text-white';
+                        break;
+                      case 'diantar':
+                        $badgeClass = 'bg-info text-white';
+                        break;
+                      case 'selesai':
+                        $badgeClass = 'bg-success text-white';
+                        break;
+                      case 'dibatalkan':
+                        $badgeClass = 'bg-danger text-white';
+                        break;
+                    }
                     ?>
-                    <span class="badge px-3 py-2 fw-bold rounded-pill bg-<?= $badgeColor ?>">
-                      <?= ucfirst($row['status']) ?>
+                    <span class="order-status-badge <?= $badgeClass ?>">
+                                        <?= ucfirst($statusValue) ?>
                     </span>
                   </td>
                   <td class="text-center">
