@@ -55,9 +55,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
   $updateStatus = mysqli_query($conn, "UPDATE orders SET status = '$statusBaru' WHERE id = $orderId");
 
   if ($updateStatus) {
-    echo "<script>alert('Status pesanan berhasil diperbarui!'); window.location.href='order-detail.php?id=$orderId';</script>";
+    echo "<script>
+      Swal.fire({
+        icon: 'success',
+        title: 'Berhasil',
+        text: 'Status pesanan berhasil diperbarui!',
+        timer: 1800,
+        showConfirmButton: false
+      }).then(() => {
+        window.location.href = 'order-detail.php?id=$orderId';
+      });
+    </script>";
     exit;
   }
+
+  echo "<script>
+    Swal.fire({
+      icon: 'error',
+      title: 'Gagal',
+      text: 'Status pesanan gagal diperbarui. Silakan coba lagi.',
+      timer: 2200,
+      showConfirmButton: false
+    }).then(() => {
+      window.location.href = 'order-detail.php?id=$orderId';
+    });
+  </script>";
+  exit;
 }
 
 // 4. Ambil Data Induk Pesanan
@@ -92,7 +115,9 @@ $queryDetails = mysqli_query($conn, "
   <title>Detail Pesanan #<?= $order['invoice_number'] ?> - Admin</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
