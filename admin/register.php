@@ -79,6 +79,22 @@ if (isset($_SESSION['user'])) {
         .login-link a:hover {
             text-decoration: underline;
         }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: transparent;
+            color: #ff94c4;
+            cursor: pointer;
+            padding: 0;
+        }
     </style>
 </head>
 
@@ -97,13 +113,25 @@ if (isset($_SESSION['user'])) {
                             </div>
                             <div class="mb-3">
                                 <label for="password" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="password" name="password"
-                                    autocomplete="off">
+                                <div class="password-wrapper">
+                                    <input type="password" class="form-control pe-5" id="password" name="password"
+                                        autocomplete="off">
+                                    <button type="button" class="password-toggle" data-target="password"
+                                        aria-label="Tampilkan password">
+                                        <i class="fa fa-eye"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div class="mb-3">
                                 <label for="confirmPassword" class="form-label">Konfirmasi</label>
-                                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword"
-                                    autocomplete="off">
+                                <div class="password-wrapper">
+                                    <input type="password" class="form-control pe-5" id="confirmPassword"
+                                        name="confirmPassword" autocomplete="off">
+                                    <button type="button" class="password-toggle" data-target="confirmPassword"
+                                        aria-label="Tampilkan password">
+                                        <i class="fa fa-eye"></i>
+                                    </button>
+                                </div>
                             </div>
                             <button type="submit" class="btn btn-register">Daftar</button>
                         </form>
@@ -132,6 +160,22 @@ if (isset($_SESSION['user'])) {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function () {
+            $('.password-toggle').on('click', function () {
+                var targetId = $(this).data('target');
+                var input = $('#' + targetId);
+                var icon = $(this).find('i');
+
+                if (input.attr('type') === 'password') {
+                    input.attr('type', 'text');
+                    icon.removeClass('fa-eye').addClass('fa-eye-slash');
+                    $(this).attr('aria-label', 'Sembunyikan password');
+                } else {
+                    input.attr('type', 'password');
+                    icon.removeClass('fa-eye-slash').addClass('fa-eye');
+                    $(this).attr('aria-label', 'Tampilkan password');
+                }
+            });
+
             $("#registerForm").submit(function (e) {
                 e.preventDefault();
 
