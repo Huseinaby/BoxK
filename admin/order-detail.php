@@ -18,9 +18,25 @@ if ($orderId <= 0) {
   header('Location: orders.php');
   exit;
 }
-// 3. Proses Ganti Status (Saat Form di-Submit Admin) - Menyesuaikan Pemotongan Stok di Checkout
+// 3. Ambil Data Induk Pesanan
+$queryOrder = mysqli_query($conn, "
+    SELECT o.*, u.username 
+    FROM orders o 
+    JOIN users u ON o.user_id = u.id 
+    WHERE o.id = $orderId
+");
+$order = mysqli_fetch_assoc($queryOrder);
+
+if (!$order) {
+  header('Location: orders.php');
+  exit;
+}
+
+// 4. Proses Ganti Status (Saat Form di-Submit Admin) - Menyesuaikan Pemotongan Stok di Checkout
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
   $statusBaru = $_POST['status'];
+  $courier = trim($_POST['courier'] ?? '');
+  $trackingNumber = trim($_POST['tracking_number'] ?? '');
 
   // Ambil status lama dari database untuk pengecekan riwayat status
   $qCheck = mysqli_query($conn, "SELECT status FROM orders WHERE id = $orderId");
@@ -51,8 +67,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     }
   }
 
-  // Update status induk pesanan ke database
-  $updateStatus = mysqli_query($conn, "UPDATE orders SET status = '$statusBaru' WHERE id = $orderId");
+  $shippingMethod = $order['shipping_method'] ?? '';
+  if ($shippingMethod === 'diantar') {
+    $courierValue = mysqli_real_escape_string($conn, $courier);
+    $trackingValue = mysqli_real_escape_string($conn, $trackingNumber);
+
+    $updateStatus = mysqli_query($conn, "UPDATE orders SET status = '$statusBaru', courier = '$courierValue', tracking_number = '$trackingValue' WHERE id = $orderId");
+  } else {
+    $updateStatus = mysqli_query($conn, "UPDATE orders SET status = '$statusBaru' WHERE id = $orderId");
+  }
 
   if ($updateStatus) {
     echo "<script>
@@ -80,20 +103,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
       window.location.href = 'order-detail.php?id=$orderId';
     });
   </script>";
-  exit;
-}
-
-// 4. Ambil Data Induk Pesanan
-$queryOrder = mysqli_query($conn, "
-    SELECT o.*, u.username 
-    FROM orders o 
-    JOIN users u ON o.user_id = u.id 
-    WHERE o.id = $orderId
-");
-$order = mysqli_fetch_assoc($queryOrder);
-
-if (!$order) {
-  header('Location: orders.php');
   exit;
 }
 
@@ -333,6 +342,8 @@ $queryDetails = mysqli_query($conn, "
                 $badgeColor = 'warning text-dark';
               elseif ($order['status'] === 'proses')
                 $badgeColor = 'primary';
+              elseif ($order['status'] === 'diantar')
+                $badgeColor = 'info';
               elseif ($order['status'] === 'selesai')
                 $badgeColor = 'success';
               elseif ($order['status'] === 'dibatalkan')
@@ -350,11 +361,24 @@ $queryDetails = mysqli_query($conn, "
                   </option>
                   <option value="proses" <?= $order['status'] === 'proses' ? 'selected' : '' ?>>Proses (Bayar Valid &
                     Potong Stok)</option>
+                  <option value="diantar" <?= $order['status'] === 'diantar' ? 'selected' : '' ?>>Diantar (Sedang Dalam Pengiriman)</option>
                   <option value="selesai" <?= $order['status'] === 'selesai' ? 'selected' : '' ?>>Selesai (Kado
                     Sampai/Diambil)</option>
                   <option value="dibatalkan" <?= $order['status'] === 'dibatalkan' ? 'selected' : '' ?>>Dibatalkan</option>
                 </select>
               </div>
+
+              <?php if ($order['shipping_method'] === 'diantar'): ?>
+                <div class="mb-3">
+                  <label class="form-label small fw-bold text-dark">Kurir</label>
+                  <input type="text" name="courier" class="form-control" value="<?= htmlspecialchars($order['courier'] ?? '') ?>" placeholder="Contoh: JNE, POS, Grab">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label small fw-bold text-dark">Nomor Tracking</label>
+                  <input type="text" name="tracking_number" class="form-control" value="<?= htmlspecialchars($order['tracking_number'] ?? '') ?>" placeholder="Masukkan nomor resi">
+                </div>
+              <?php endif; ?>
+
               <button type="submit" name="update_status" class="btn text-white w-100 fw-bold py-2 shadow-sm"
                 style="background-color: #ff74a4;">
                 <i class="fa fa-floppy-disk me-1"></i> Perbarui Status
