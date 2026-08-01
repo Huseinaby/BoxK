@@ -154,7 +154,7 @@ $ongkosKirimDefault = 10000;
                   <div class="col-md-12">
                     <label class="form-label font-weight-bold">Nama Penerima</label>
                     <input type="text" name="nama_penerima" id="inputNama" class="form-control" required
-                      placeholder="Contoh: Muhammad Abu Husein">
+                      placeholder="Masukkan nama lengkap penerima">
                   </div>
 
                   <div class="col-md-12">

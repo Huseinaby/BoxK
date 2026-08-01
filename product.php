@@ -230,7 +230,19 @@ $products = getProductLimit();
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                                    <div
+                                        class="modal-footer border-0 pt-0 px-4 pb-4 d-flex justify-content-between align-items-center">
+                                        <?php if ($user): ?>
+                                            <button type="button" class="btn modal-action-btn primary"
+                                                onclick="addCartAjax(event, <?= (int) $product['id'] ?>)">
+                                                <i class="fa fa-cart-plus me-2"></i>Masukkan ke Keranjang
+                                            </button>
+                                        <?php else: ?>
+                                            <a href="admin/index.php" class="btn modal-action-btn secondary">
+                                                <i class="fa fa-sign-in-alt me-2"></i>Masuk untuk Membeli
+                                            </a>
+                                        <?php endif; ?>
+
                                         <button type="button" class="btn btn-secondary"
                                             data-bs-dismiss="modal">Tutup</button>
                                     </div>

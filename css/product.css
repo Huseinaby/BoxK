@@ -212,6 +212,35 @@
     border-radius: 10px;
   }
 
+  .modal-action-btn {
+    border: none;
+    border-radius: 10px;
+    padding: 0.65rem 1rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  .modal-action-btn.primary {
+    background: #ff74a4;
+    color: #fff;
+  }
+
+  .modal-action-btn.primary:hover {
+    background: #e95f93;
+    color: #fff;
+  }
+
+  .modal-action-btn.secondary {
+    background: #fff0f5;
+    color: #ff74a4;
+    border: 1px solid #f6c2d7;
+  }
+
+  .modal-action-btn.secondary:hover {
+    background: #ffe7f0;
+    color: #e95f93;
+  }
+
   @media (max-width: 576px) {
     .product-modal-title {
       font-size: 1.2rem;
