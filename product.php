@@ -57,6 +57,20 @@ $products = getProductLimit();
             color: #fff;
             border-color: #ff74a4;
         }
+
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-image,
+        .product-img-wrapper video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
     </style>
 </head>
 
@@ -159,11 +173,39 @@ $products = getProductLimit();
                             data-name="<?= strtolower(htmlspecialchars($product['name'])) ?>">
                             <div class="card h-100 product-inner-card">
 
-                                <!-- Container Gambar -->
+                                <?php
+                                $isVideo = false;
+
+                                if (!empty($productMedia)) {
+                                    $extension = strtolower(pathinfo($productMedia, PATHINFO_EXTENSION));
+                                    $isVideo = in_array($extension, ['mp4', 'webm']);
+                                }
+                                ?>
+
                                 <div class="product-img-wrapper">
-                                    <img src="<?= !empty($productMedia)
-                                        ? 'assets/uploads/' . htmlspecialchars($productMedia)
-                                        : 'assets/images/banner.png' ?>">
+
+                                    <?php if (!empty($productMedia)): ?>
+
+                                        <?php if ($isVideo): ?>
+
+                                            <video class="product-image" autoplay muted loop playsinline>
+                                                <source src="assets/uploads/<?= htmlspecialchars($productMedia) ?>">
+                                                Browser Anda tidak mendukung video.
+                                            </video>
+
+                                        <?php else: ?>
+
+                                            <img src="assets/uploads/<?= htmlspecialchars($productMedia) ?>" class="product-image"
+                                                alt="<?= htmlspecialchars($product['name']) ?>">
+
+                                        <?php endif; ?>
+
+                                    <?php else: ?>
+
+                                        <img src="assets/images/banner.png" class="product-image" alt="Tidak ada media">
+
+                                    <?php endif; ?>
+
                                 </div>
 
                                 <div class="card-body d-flex flex-column p-3">
@@ -221,10 +263,41 @@ $products = getProductLimit();
                                     <div class="modal-body p-4">
                                         <div class="row g-4 align-items-stretch">
                                             <div class="col-md-5">
-                                                <div class="modal-image-card">
-                                                    <img id="productImage<?= $product['id'] ?>" src="<?= !empty($productMedia)
-                                                          ? 'assets/uploads/' . htmlspecialchars($productMedia)
-                                                          : 'assets/images/banner.png' ?>">
+                                                <div class="modal-image-card" id="productMedia<?= $product['id'] ?>"
+                                                    data-product-media="<?= htmlspecialchars($productMedia) ?>"
+                                                    data-product-type="<?= $isVideo ? 'video' : 'image' ?>">
+
+                                                    <?php
+                                                    $isVideo = false;
+
+                                                    if (!empty($productMedia)) {
+                                                        $ext = strtolower(pathinfo($productMedia, PATHINFO_EXTENSION));
+                                                        $isVideo = in_array($ext, ['mp4', 'webm']);
+                                                    }
+                                                    ?>
+
+                                                    <?php if (!empty($productMedia)): ?>
+
+                                                        <?php if ($isVideo): ?>
+
+                                                            <video class="modal-product-image">
+                                                                <source src="assets/uploads/<?= htmlspecialchars($productMedia) ?>">
+
+                                                            </video>
+
+                                                        <?php else: ?>
+
+                                                            <img>
+
+                                                        <?php endif; ?>
+
+                                                    <?php else: ?>
+
+                                                        <img id="productImage<?= $product['id'] ?>" class="modal-product-image"
+                                                            src="assets/images/banner.png">
+
+                                                    <?php endif; ?>
+
                                                 </div>
                                             </div>
                                             <div class="col-md-7">
@@ -239,8 +312,7 @@ $products = getProductLimit();
                                                         <div class="d-flex flex-wrap gap-2"
                                                             id="variantList<?= $product['id'] ?>">
                                                             <?php foreach ($product['variants'] as $index => $variant): ?>
-                                                                <button type="button"
-                                                                    class="btn variant-chip <?= $index === 0 ? 'active' : '' ?>"
+                                                                <button type="button" class="btn variant-chip"
                                                                     onclick="selectProductVariant(this, <?= (int) $product['id'] ?>)"
                                                                     data-variant-id="<?= (int) $variant['id'] ?>"
                                                                     data-variant-image="<?= htmlspecialchars($variant['image'] ?? '') ?>"
@@ -251,14 +323,13 @@ $products = getProductLimit();
                                                             <?php endforeach; ?>
                                                         </div>
                                                         <input type="hidden" id="selectedVariant<?= $product['id'] ?>"
-                                                            value="<?= (int) $primaryVariantId ?>">
+                                                            value="">
                                                     </div>
 
                                                     <div class="detail-grid">
                                                         <div class="detail-item">
                                                             <strong>Warna</strong>
-                                                            <span
-                                                                id="selectedColor<?= $product['id'] ?>"><?= htmlspecialchars($primaryVariant['color'] ?? '-') ?></span>
+                                                            <span id="selectedColor<?= $product['id'] ?>">-</span>
                                                         </div>
                                                         <div class="detail-item">
                                                             <strong>Ukuran</strong>
@@ -266,8 +337,7 @@ $products = getProductLimit();
                                                         </div>
                                                         <div class="detail-item">
                                                             <strong>Stok</strong>
-                                                            <span
-                                                                id="selectedStock<?= $product['id'] ?>"><?= (int) $primaryStock ?></span>
+                                                            <span id="selectedStock<?= $product['id'] ?>">-</span>
                                                         </div>
                                                         <div class="detail-item">
                                                             <strong>Kategori</strong>
@@ -377,12 +447,23 @@ $products = getProductLimit();
             const variantColor = button.getAttribute('data-variant-color');
 
             const hiddenInput = document.getElementById('selectedVariant' + productId);
-            const imageElement = document.getElementById('productImage' + productId);
+            const mediaContainer =
+                document.getElementById('productMedia' + productId);
             const colorElement = document.getElementById('selectedColor' + productId);
             const stockElement = document.getElementById('selectedStock' + productId);
 
             if (hiddenInput) hiddenInput.value = variantId;
-            if (imageElement && variantImage) imageElement.src = 'assets/uploads/' + variantImage;
+
+            if (mediaContainer && variantImage) {
+
+                mediaContainer.innerHTML = `
+        <img
+            src="assets/uploads/${variantImage}"
+            class="modal-product-image"
+            alt="">
+    `;
+
+            }
             if (colorElement) colorElement.textContent = variantColor || '-';
             if (stockElement) stockElement.textContent = variantStock || '0';
         }
@@ -442,6 +523,79 @@ $products = getProductLimit();
                     toast.show();
                 });
         }
+
+        document.querySelectorAll('.modal').forEach(function (modal) {
+
+            modal.addEventListener('hidden.bs.modal', function () {
+
+                const mediaContainer =
+                    modal.querySelector('.modal-image-card');
+
+                if (!mediaContainer) return;
+
+                const media =
+                    mediaContainer.dataset.productMedia;
+
+                const type =
+                    mediaContainer.dataset.productType;
+
+                if (!media) {
+
+                    mediaContainer.innerHTML =
+                        `<img
+                    src="assets/images/banner.png"
+                    class="modal-product-image">`;
+
+                    return;
+                }
+
+                if (type === 'video') {
+
+                    mediaContainer.innerHTML = `
+                <video
+                    class="modal-product-image"
+                    autoplay
+                    muted
+                    loop
+                    playsinline>
+
+                    <source
+                        src="assets/uploads/${media}">
+
+                </video>
+            `;
+
+                } else {
+
+                    mediaContainer.innerHTML = `
+                <img
+                    src="assets/uploads/${media}"
+                    class="modal-product-image">
+            `;
+
+                }
+
+                modal.querySelectorAll('.variant-chip')
+                    .forEach(btn => btn.classList.remove('active'));
+
+                const hidden =
+                    modal.querySelector('input[id^="selectedVariant"]');
+
+                if (hidden) hidden.value = '';
+
+                const color =
+                    modal.querySelector('span[id^="selectedColor"]');
+
+                if (color) color.textContent = '-';
+
+                const stock =
+                    modal.querySelector('span[id^="selectedStock"]');
+
+                if (stock) stock.textContent = '-';
+
+            });
+
+        });
     </script>
 
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
