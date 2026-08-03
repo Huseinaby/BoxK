@@ -147,8 +147,11 @@ $products = getProductLimit();
                     <?php foreach ($products as $product): ?>
                         <?php
                         $primaryVariant = $product['variants'][0] ?? null;
-                        $primaryImage = $primaryVariant['primary_image'] ?? $product['primary_image'] ?? '';
+
+                        $productMedia = $product['media'] ?? '';
+
                         $primaryVariantId = $primaryVariant['id'] ?? 0;
+
                         $primaryStock = (int) ($primaryVariant['stock'] ?? $product['total_stock'] ?? 0);
                         ?>
                         <div class="col-lg-3 col-md-4 col-sm-6 mb-4 product-card"
@@ -158,8 +161,9 @@ $products = getProductLimit();
 
                                 <!-- Container Gambar -->
                                 <div class="product-img-wrapper">
-                                    <img src="<?= !empty($primaryImage) ? 'assets/uploads/' . htmlspecialchars($primaryImage) : 'assets/images/banner.png' ?>"
-                                        class="product-image" alt="<?= htmlspecialchars($product['name']) ?>">
+                                    <img src="<?= !empty($productMedia)
+                                        ? 'assets/uploads/' . htmlspecialchars($productMedia)
+                                        : 'assets/images/banner.png' ?>">
                                 </div>
 
                                 <div class="card-body d-flex flex-column p-3">
@@ -218,10 +222,9 @@ $products = getProductLimit();
                                         <div class="row g-4 align-items-stretch">
                                             <div class="col-md-5">
                                                 <div class="modal-image-card">
-                                                    <img id="productImage<?= $product['id'] ?>"
-                                                        src="<?= !empty($primaryImage) ? 'assets/uploads/' . htmlspecialchars($primaryImage) : 'assets/images/banner.png' ?>"
-                                                        class="modal-product-image"
-                                                        alt="<?= htmlspecialchars($product['name']) ?>">
+                                                    <img id="productImage<?= $product['id'] ?>" src="<?= !empty($productMedia)
+                                                          ? 'assets/uploads/' . htmlspecialchars($productMedia)
+                                                          : 'assets/images/banner.png' ?>">
                                                 </div>
                                             </div>
                                             <div class="col-md-7">
@@ -240,7 +243,7 @@ $products = getProductLimit();
                                                                     class="btn variant-chip <?= $index === 0 ? 'active' : '' ?>"
                                                                     onclick="selectProductVariant(this, <?= (int) $product['id'] ?>)"
                                                                     data-variant-id="<?= (int) $variant['id'] ?>"
-                                                                    data-variant-image="<?= htmlspecialchars($variant['primary_image'] ?? '') ?>"
+                                                                    data-variant-image="<?= htmlspecialchars($variant['image'] ?? '') ?>"
                                                                     data-variant-stock="<?= (int) $variant['stock'] ?>"
                                                                     data-variant-color="<?= htmlspecialchars($variant['color']) ?>">
                                                                     <?= htmlspecialchars($variant['color']) ?>
