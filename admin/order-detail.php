@@ -88,17 +88,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
 
 // 5. Ambil Data Detail Produk yang Dibeli
 $queryDetails = mysqli_query($conn, "
-    SELECT od.*, pv.color AS variant_color, p.name AS product_name,
-           (
-             SELECT pi.image
-             FROM product_images pi
-             WHERE pi.variant_id = pv.id
-             ORDER BY pi.is_primary DESC, pi.id ASC
-             LIMIT 1
-           ) AS product_image
+    SELECT
+        od.*,
+        pv.color AS variant_color,
+        pv.image AS product_image,
+        p.name AS product_name
     FROM order_details od
-    JOIN product_variants pv ON od.variant_id = pv.id
-    JOIN product p ON pv.product_id = p.id
+    JOIN product_variants pv
+        ON od.variant_id = pv.id
+    JOIN product p
+        ON pv.product_id = p.id
     WHERE od.order_id = $orderId
 ");
 ?>

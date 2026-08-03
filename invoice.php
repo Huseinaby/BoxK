@@ -34,17 +34,17 @@ if (!$order) {
 
 // 4. Ambil Data Detail Item Produk yang Dibeli (Membaca JOIN ke tabel produk untuk ambil nama & gambar)
 $queryItems = mysqli_prepare($conn, "
-    SELECT od.*, pv.color AS variant_color, p.name AS product_name, p.price AS product_price,
-           (
-             SELECT pi.image
-             FROM product_images pi
-             WHERE pi.variant_id = pv.id
-             ORDER BY pi.is_primary DESC, pi.id ASC
-             LIMIT 1
-           ) AS product_image
+    SELECT
+        od.*,
+        p.name AS product_name,
+        p.price AS product_price,
+        pv.color AS variant_color,
+        pv.image AS product_image
     FROM order_details od
-    JOIN product_variants pv ON od.variant_id = pv.id
-    JOIN product p ON pv.product_id = p.id
+    JOIN product_variants pv
+        ON od.variant_id = pv.id
+    JOIN product p
+        ON pv.product_id = p.id
     WHERE od.order_id = ?
 ");
 mysqli_stmt_bind_param($queryItems, 'i', $orderId);
