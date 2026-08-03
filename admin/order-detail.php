@@ -349,15 +349,23 @@ $queryDetails = mysqli_query($conn, "
               <div class="mb-3">
                 <label class="form-label small fw-bold text-dark">Ubah Status Menjadi:</label>
                 <select name="status" class="form-select">
-                  <option value="pending" <?= $order['status'] === 'pending' ? 'selected' : '' ?>>Pending (Belum Diperiksa)
+                  <option value="pending" <?= $order['status'] == 'pending' ? 'selected' : '' ?>>
+                    Pending
                   </option>
-                  <option value="proses" <?= $order['status'] === 'proses' ? 'selected' : '' ?>>Proses (Bayar Valid &
-                    Potong Stok)</option>
-                  <option value="diantar" <?= $order['status'] === 'diantar' ? 'selected' : '' ?>>Diantar (Sedang Dalam
-                    Pengiriman)</option>
-                  <option value="selesai" <?= $order['status'] === 'selesai' ? 'selected' : '' ?>>Selesai (Kado
-                    Sampai/Diambil)</option>
-                  <option value="dibatalkan" <?= $order['status'] === 'dibatalkan' ? 'selected' : '' ?>>Dibatalkan</option>
+                  <option value="proses" <?= $order['status'] == 'proses' ? 'selected' : '' ?>>
+                    Proses
+                  </option>
+                  <?php if ($order['shipping_method'] === 'diantar'): ?>
+                    <option value="diantar" <?= $order['status'] == 'diantar' ? 'selected' : '' ?>>
+                      Diantar
+                    </option>
+                  <?php endif; ?>
+                  <option value="selesai" <?= $order['status'] == 'selesai' ? 'selected' : '' ?>>
+                    Selesai
+                  </option>
+                  <option value="dibatalkan" <?= $order['status'] == 'dibatalkan' ? 'selected' : '' ?>>
+                    Dibatalkan
+                  </option>
                 </select>
               </div>
 
