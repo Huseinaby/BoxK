@@ -34,9 +34,17 @@ if (!$order) {
 
 // 4. Ambil Data Detail Item Produk yang Dibeli (Membaca JOIN ke tabel produk untuk ambil nama & gambar)
 $queryItems = mysqli_prepare($conn, "
-    SELECT od.*, p.name AS product_name, p.image AS product_image 
+    SELECT od.*, pv.color AS variant_color, p.name AS product_name, p.price AS product_price,
+           (
+             SELECT pi.image
+             FROM product_images pi
+             WHERE pi.variant_id = pv.id
+             ORDER BY pi.is_primary DESC, pi.id ASC
+             LIMIT 1
+           ) AS product_image
     FROM order_details od
-    JOIN product p ON od.product_id = p.id
+    JOIN product_variants pv ON od.variant_id = pv.id
+    JOIN product p ON pv.product_id = p.id
     WHERE od.order_id = ?
 ");
 mysqli_stmt_bind_param($queryItems, 'i', $orderId);
@@ -365,9 +373,13 @@ if (!$shop) {
                       <div class="d-flex align-items-center">
                         <img src="assets/uploads/<?= htmlspecialchars($item['product_image']) ?>"
                           class="rounded border me-3" style="width: 45px; height: 45px; object-fit: cover;">
-                        <span class="fw-bold text-dark text-truncate" style="max-width: 250px;">
-                          <?= htmlspecialchars($item['product_name']) ?>
-                        </span>
+                        <div>
+                          <span class="fw-bold text-dark text-truncate d-block" style="max-width: 250px;">
+                            <?= htmlspecialchars($item['product_name']) ?>
+                          </span>
+                          <span class="text-muted small d-block">Warna:
+                            <?= htmlspecialchars($item['variant_color'] ?? '-') ?></span>
+                        </div>
                       </div>
                     </td>
                     <td class="text-center">Rp <?= number_format($item['price'], 0, ',', '.') ?></td>

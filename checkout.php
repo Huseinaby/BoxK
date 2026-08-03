@@ -219,14 +219,15 @@ $ongkosKirimDefault = 10000;
                     <?php
                     $subtotal = $cart['price'] * $cart['quantity'];
                     $totalHargaBarang += $subtotal;
+                    $variantImage = !empty($cart['image']) ? 'assets/uploads/' . $cart['image'] : 'assets/images/banner.png';
                     ?>
                     <div class="d-flex align-items-center mb-3">
-                      <img src="assets/uploads/<?= htmlspecialchars($cart['image']) ?>"
-                        class="rounded border product-checkout-img me-3">
+                      <img src="<?= htmlspecialchars($variantImage) ?>" class="rounded border product-checkout-img me-3">
                       <div class="flex-grow-1">
                         <h6 class="mb-0 fw-bold text-truncate" style="max-width: 180px;">
                           <?= htmlspecialchars($cart['name']) ?>
                         </h6>
+                        <small class="text-muted d-block">Warna: <?= htmlspecialchars($cart['color'] ?? '-') ?></small>
                         <small class="text-muted"><?= $cart['quantity'] ?>x @ Rp
                           <?= number_format($cart['price'], 0, ',', '.') ?></small>
                       </div>

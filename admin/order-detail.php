@@ -45,25 +45,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
 
   // LOGIKA RESTOCK: Jika pesanan dibatalkan (dari status apa pun selain dibatalkan), kembalikan stoknya
   if ($statusBaru === 'dibatalkan' && $statusLama !== 'dibatalkan') {
-    $qItems = mysqli_query($conn, "SELECT product_id, quantity FROM order_details WHERE order_id = $orderId");
+    $qItems = mysqli_query($conn, "SELECT variant_id, quantity FROM order_details WHERE order_id = $orderId");
     while ($item = mysqli_fetch_assoc($qItems)) {
-      $pId = $item['product_id'];
+      $variantId = $item['variant_id'];
       $qty = $item['quantity'];
 
-      // Kembalikan sisa inventori ke tabel product
-      mysqli_query($conn, "UPDATE product SET stock = stock + $qty WHERE id = $pId");
+      // Kembalikan sisa inventori ke tabel product_variants
+      mysqli_query($conn, "UPDATE product_variants SET stock = stock + $qty WHERE id = $variantId");
     }
   }
 
   // LOGIKA RE-REDUCE (Pengecualian): Jika admin mengaktifkan kembali pesanan yang tadinya sudah dibatalkan
   if ($statusLama === 'dibatalkan' && $statusBaru !== 'dibatalkan') {
-    $qItems = mysqli_query($conn, "SELECT product_id, quantity FROM order_details WHERE order_id = $orderId");
+    $qItems = mysqli_query($conn, "SELECT variant_id, quantity FROM order_details WHERE order_id = $orderId");
     while ($item = mysqli_fetch_assoc($qItems)) {
-      $pId = $item['product_id'];
+      $variantId = $item['variant_id'];
       $qty = $item['quantity'];
 
       // Kurangi stok kembali karena pesanan diaktifkan lagi
-      mysqli_query($conn, "UPDATE product SET stock = stock - $qty WHERE id = $pId");
+      mysqli_query($conn, "UPDATE product_variants SET stock = stock - $qty WHERE id = $variantId");
     }
   }
 
@@ -88,9 +88,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
 
 // 5. Ambil Data Detail Produk yang Dibeli
 $queryDetails = mysqli_query($conn, "
-    SELECT od.*, p.name AS product_name, p.image AS product_image 
+    SELECT od.*, pv.color AS variant_color, p.name AS product_name,
+           (
+             SELECT pi.image
+             FROM product_images pi
+             WHERE pi.variant_id = pv.id
+             ORDER BY pi.is_primary DESC, pi.id ASC
+             LIMIT 1
+           ) AS product_image
     FROM order_details od
-    JOIN product p ON od.product_id = p.id
+    JOIN product_variants pv ON od.variant_id = pv.id
+    JOIN product p ON pv.product_id = p.id
     WHERE od.order_id = $orderId
 ");
 ?>
@@ -281,7 +289,12 @@ $queryDetails = mysqli_query($conn, "
                         <div class="d-flex align-items-center">
                           <img src="../assets/uploads/<?= htmlspecialchars($item['product_image']) ?>"
                             class="rounded border me-2" style="width: 45px; height: 45px; object-fit: cover;">
-                          <span class="small fw-bold text-dark"><?= htmlspecialchars($item['product_name']) ?></span>
+                          <div>
+                            <span
+                              class="small fw-bold text-dark d-block"><?= htmlspecialchars($item['product_name']) ?></span>
+                            <span class="text-muted small d-block">Warna:
+                              <?= htmlspecialchars($item['variant_color'] ?? '-') ?></span>
+                          </div>
                         </div>
                       </td>
                       <td class="text-center small text-muted">Rp <?= number_format($item['price'], 0, ',', '.') ?></td>

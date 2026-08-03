@@ -178,15 +178,18 @@ $total = 0;
                   $cartId = isset($cart['cart_id']) ? (int) $cart['cart_id'] : 0; // Menggunakan alias cart_id dari JOIN
                   $subtotal = $cart['price'] * $cart['quantity'];
                   $total += $subtotal;
+                  $variantImage = !empty($cart['image']) ? 'assets/uploads/' . $cart['image'] : 'assets/images/banner.png';
                   ?>
 
                   <tr>
                     <td width="100">
-                      <img src="assets/uploads/<?= htmlspecialchars($cart['image']) ?>" class="img-fluid rounded"
-                        alt="Produk">
+                      <img src="<?= htmlspecialchars($variantImage) ?>" class="img-fluid rounded" alt="Produk">
                     </td>
 
-                    <td class="text-start"><?= htmlspecialchars($cart['name']) ?></td>
+                    <td class="text-start">
+                      <div class="fw-bold"><?= htmlspecialchars($cart['name']) ?></div>
+                      <small class="text-muted">Warna: <?= htmlspecialchars($cart['color'] ?? '-') ?></small>
+                    </td>
 
                     <td class="text-end">
                       Rp <?= number_format($cart['price'], 0, ',', '.') ?>

@@ -45,12 +45,13 @@ $querySales = mysqli_query($conn, "
 
 // 5. Query Produk Terlaris (Top 5)
 $queryTopProducts = mysqli_query($conn, "
-    SELECT p.name, SUM(od.quantity) as total_qty, SUM(od.price * od.quantity) as total_duit
+  SELECT p.name, SUM(od.quantity) as total_qty, SUM(od.price * od.quantity) as total_duit
     FROM order_details od
-    JOIN product p ON od.product_id = p.id
+  JOIN product_variants pv ON od.variant_id = pv.id
+  JOIN product p ON pv.product_id = p.id
     JOIN orders o ON od.order_id = o.id
     $whereClause
-    GROUP BY od.product_id
+  GROUP BY p.id, p.name
     ORDER BY total_qty DESC
     LIMIT 5
 ");

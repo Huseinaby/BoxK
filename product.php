@@ -40,6 +40,24 @@ $products = getProductLimit();
     <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/product.css">
+    <style>
+        .variant-chip {
+            border: 1px solid #f2c3d0;
+            background: #fff;
+            color: #7a3955;
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 0.45rem 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .variant-chip:hover,
+        .variant-chip.active {
+            background: #ff74a4;
+            color: #fff;
+            border-color: #ff74a4;
+        }
+    </style>
 </head>
 
 <body>
@@ -127,6 +145,12 @@ $products = getProductLimit();
                 </div>
                 <div class="row" id="productContainer">
                     <?php foreach ($products as $product): ?>
+                        <?php
+                        $primaryVariant = $product['variants'][0] ?? null;
+                        $primaryImage = $primaryVariant['primary_image'] ?? $product['primary_image'] ?? '';
+                        $primaryVariantId = $primaryVariant['id'] ?? 0;
+                        $primaryStock = (int) ($primaryVariant['stock'] ?? $product['total_stock'] ?? 0);
+                        ?>
                         <div class="col-lg-3 col-md-4 col-sm-6 mb-4 product-card"
                             data-category="<?= htmlspecialchars($product['category']) ?>"
                             data-name="<?= strtolower(htmlspecialchars($product['name'])) ?>">
@@ -134,7 +158,7 @@ $products = getProductLimit();
 
                                 <!-- Container Gambar -->
                                 <div class="product-img-wrapper">
-                                    <img src="assets/uploads/<?= htmlspecialchars($product['image']) ?>"
+                                    <img src="<?= !empty($primaryImage) ? 'assets/uploads/' . htmlspecialchars($primaryImage) : 'assets/images/banner.png' ?>"
                                         class="product-image" alt="<?= htmlspecialchars($product['name']) ?>">
                                 </div>
 
@@ -155,6 +179,11 @@ $products = getProductLimit();
                                     <!-- Harga Produk -->
                                     <div class="price mb-2">
                                         Rp <?= number_format($product['price'], 0, ',', '.') ?>
+                                    </div>
+
+                                    <div class="text-muted small mb-2">
+                                        <?= count($product['variants']) ?> varian warna • Stok total
+                                        <?= (int) $product['total_stock'] ?>
                                     </div>
 
                                     <!-- Tombol Detail -->
@@ -189,7 +218,8 @@ $products = getProductLimit();
                                         <div class="row g-4 align-items-stretch">
                                             <div class="col-md-5">
                                                 <div class="modal-image-card">
-                                                    <img src="assets/uploads/<?= htmlspecialchars($product['image']) ?>"
+                                                    <img id="productImage<?= $product['id'] ?>"
+                                                        src="<?= !empty($primaryImage) ? 'assets/uploads/' . htmlspecialchars($primaryImage) : 'assets/images/banner.png' ?>"
                                                         class="modal-product-image"
                                                         alt="<?= htmlspecialchars($product['name']) ?>">
                                                 </div>
@@ -201,10 +231,31 @@ $products = getProductLimit();
                                                         <?= number_format($product['price'], 0, ',', '.') ?>
                                                     </div>
 
+                                                    <div class="mb-3">
+                                                        <h6 class="fw-bold mb-2">Pilih Warna</h6>
+                                                        <div class="d-flex flex-wrap gap-2"
+                                                            id="variantList<?= $product['id'] ?>">
+                                                            <?php foreach ($product['variants'] as $index => $variant): ?>
+                                                                <button type="button"
+                                                                    class="btn variant-chip <?= $index === 0 ? 'active' : '' ?>"
+                                                                    onclick="selectProductVariant(this, <?= (int) $product['id'] ?>)"
+                                                                    data-variant-id="<?= (int) $variant['id'] ?>"
+                                                                    data-variant-image="<?= htmlspecialchars($variant['primary_image'] ?? '') ?>"
+                                                                    data-variant-stock="<?= (int) $variant['stock'] ?>"
+                                                                    data-variant-color="<?= htmlspecialchars($variant['color']) ?>">
+                                                                    <?= htmlspecialchars($variant['color']) ?>
+                                                                </button>
+                                                            <?php endforeach; ?>
+                                                        </div>
+                                                        <input type="hidden" id="selectedVariant<?= $product['id'] ?>"
+                                                            value="<?= (int) $primaryVariantId ?>">
+                                                    </div>
+
                                                     <div class="detail-grid">
                                                         <div class="detail-item">
                                                             <strong>Warna</strong>
-                                                            <span><?= htmlspecialchars($product['color'] ?? '-') ?></span>
+                                                            <span
+                                                                id="selectedColor<?= $product['id'] ?>"><?= htmlspecialchars($primaryVariant['color'] ?? '-') ?></span>
                                                         </div>
                                                         <div class="detail-item">
                                                             <strong>Ukuran</strong>
@@ -212,7 +263,8 @@ $products = getProductLimit();
                                                         </div>
                                                         <div class="detail-item">
                                                             <strong>Stok</strong>
-                                                            <span><?= (int) ($product['stock'] ?? 0) ?></span>
+                                                            <span
+                                                                id="selectedStock<?= $product['id'] ?>"><?= (int) $primaryStock ?></span>
                                                         </div>
                                                         <div class="detail-item">
                                                             <strong>Kategori</strong>
@@ -308,12 +360,40 @@ $products = getProductLimit();
             }
         }
 
+        function selectProductVariant(button, productId) {
+            const variantButtons = document.querySelectorAll('#variantList' + productId + ' .variant-chip');
+            variantButtons.forEach(function (item) {
+                item.classList.remove('active');
+            });
+
+            button.classList.add('active');
+
+            const variantId = button.getAttribute('data-variant-id');
+            const variantImage = button.getAttribute('data-variant-image');
+            const variantStock = button.getAttribute('data-variant-stock');
+            const variantColor = button.getAttribute('data-variant-color');
+
+            const hiddenInput = document.getElementById('selectedVariant' + productId);
+            const imageElement = document.getElementById('productImage' + productId);
+            const colorElement = document.getElementById('selectedColor' + productId);
+            const stockElement = document.getElementById('selectedStock' + productId);
+
+            if (hiddenInput) hiddenInput.value = variantId;
+            if (imageElement && variantImage) imageElement.src = 'assets/uploads/' + variantImage;
+            if (colorElement) colorElement.textContent = variantColor || '-';
+            if (stockElement) stockElement.textContent = variantStock || '0';
+        }
+
         function addCartAjax(event, productId) {
             event.preventDefault(); // Menghentikan form agar tidak submit lewat URL browser
+
+            const selectedVariantInput = document.getElementById('selectedVariant' + productId);
+            const selectedVariantId = selectedVariantInput ? selectedVariantInput.value : '';
 
             const formData = new FormData();
             formData.append('action', 'addToCart');
             formData.append('product_id', productId);
+            formData.append('variant_id', selectedVariantId);
             formData.append('quantity', 1);
 
             fetch('functions.php', {

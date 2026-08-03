@@ -354,3 +354,64 @@ MODIFY COLUMN status ENUM(
     'selesai',
     'dibatalkan'
 ) DEFAULT 'pending';
+
+CREATE TABLE product_variants (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  product_id INT NOT NULL,
+  color VARCHAR(50) NOT NULL,
+  stock INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_variant_product
+    FOREIGN KEY (product_id)
+    REFERENCES product(id)
+    ON DELETE CASCADE
+);
+
+CREATE TABLE product_images (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  variant_id INT NOT NULL,
+  image VARCHAR(255) NOT NULL,
+  is_primary BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_image_variant
+    FOREIGN KEY (variant_id)
+    REFERENCES product_variants(id)
+    ON DELETE CASCADE
+);
+
+ALTER TABLE carts
+ADD COLUMN variant_id INT NULL AFTER product_id,
+ADD CONSTRAINT fk_cart_variant
+  FOREIGN KEY (variant_id)
+  REFERENCES product_variants(id)
+  ON DELETE SET NULL;
+
+ALTER TABLE order_details
+ADD COLUMN variant_id INT NULL AFTER product_id,
+ADD CONSTRAINT fk_orderdetail_variant
+FOREIGN KEY (variant_id)
+REFERENCES product_variants(id);
+
+INSERT INTO product_variants (product_id, color, stock)
+SELECT id, color, stock
+FROM product;
+
+INSERT INTO product_images (variant_id, image, is_primary)
+SELECT pv.id, p.image, TRUE
+FROM product p
+JOIN product_variants pv ON pv.product_id = p.id;
+
+UPDATE order_details od
+JOIN product_variants pv ON od.product_id = pv.product_id
+SET od.variant_id = pv.id;
+
+ALTER TABLE order_details
+MODIFY variant_id INT NOT NULL;
+
+ALTER TABLE order_details
+DROP COLUMN product_id;
+
+ALTER TABLE product
+DROP COLUMN color,
+DROP COLUMN stock,
+DROP COLUMN image;

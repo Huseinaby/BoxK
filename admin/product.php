@@ -183,12 +183,17 @@ $csrfToken = csrfToken();
 
             <div class="row" id="productContainer">
                 <?php foreach ($products as $product): ?>
+                        <?php
+                        $primaryVariant = $product['variants'][0] ?? null;
+                        $primaryImage = $primaryVariant['primary_image'] ?? $product['primary_image'] ?? '';
+                        $totalStock = (int) ($product['total_stock'] ?? 0);
+                        ?>
                         <div class="col-md-3 mb-4 product-card" data-category="<?= (int) $product['category_id'] ?>"
                             data-name="<?= strtolower(htmlspecialchars($product['name'])) ?>">
                             <div class="card h-100 product-card-hover" style="cursor: pointer;" data-bs-toggle="modal"
                                 data-bs-target="#productModal<?= $product['id'] ?>">
                                 <div class="product-img-wrapper">
-                                    <img src="../assets/uploads/<?= htmlspecialchars($product['image']) ?>" alt="<?= htmlspecialchars($product['name']) ?>">
+                                    <img src="<?= !empty($primaryImage) ? '../assets/uploads/' . htmlspecialchars($primaryImage) : '../assets/images/banner.png' ?>" alt="<?= htmlspecialchars($product['name']) ?>">
                                 </div>
                                 <div class="card-body p-3">
                                     <h5 class="card-title text-dark fw-bold mb-1 small"><?= htmlspecialchars($product['name']) ?></h5>
@@ -199,7 +204,7 @@ $csrfToken = csrfToken();
                                         <span class="badge bg-<?= $product['status'] === 'tersedia' ? 'success' : 'danger' ?> px-2 py-1 small">
                                             <?= ucfirst($product['status']) ?>
                                         </span>
-                                        <small class="text-muted fw-bold">Stok: <?= (int) $product['stock'] ?></small>
+                                        <small class="text-muted fw-bold">Stok: <?= $totalStock ?></small>
                                     </div>
                                 </div>
                             </div>
@@ -213,20 +218,56 @@ $csrfToken = csrfToken();
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <img src="../assets/uploads/<?= htmlspecialchars($product['image']) ?>" class="img-fluid rounded border mb-3 w-100" style="max-height: 250px; object-fit: cover;">
+                                        <img src="<?= !empty($primaryImage) ? '../assets/uploads/' . htmlspecialchars($primaryImage) : '../assets/images/banner.png' ?>" class="img-fluid rounded border mb-3 w-100" style="max-height: 250px; object-fit: cover;">
                                         <table class="table table-sm table-borderless small mb-0">
                                             <tr><td width="30%" class="text-muted">Deskripsi</td><td>: <?= nl2br(htmlspecialchars($product['about'])) ?></td></tr>
-                                            <tr><td class="text-muted">Pilihan Warna</td><td>: <?= htmlspecialchars($product['color']) ?></td></tr>
                                             <tr><td class="text-muted">Dimensi Ukuran</td><td>: <?= htmlspecialchars($product['size']) ?></td></tr>
                                             <tr><td class="text-muted">Kategori</td><td>: <span class="badge bg-secondary"><?= htmlspecialchars($product['category'] ?? '-') ?></span></td></tr>
                                             <tr><td class="text-muted">Harga Jual</td><td class="text-danger fw-bold">: Rp <?= number_format($product['price'], 0, ',', '.') ?></td></tr>
-                                            <tr><td class="text-muted">Sisa Inventori</td><td>: <strong><?= (int) $product['stock'] ?> pcs</strong></td></tr>
                                             <tr><td class="text-muted">Status Rilis</td><td>: <span class="badge bg-<?= $product['status'] === 'tersedia' ? 'success' : 'danger' ?>"><?= ucfirst($product['status']) ?></span></td></tr>
                                         </table>
+
+                                        <hr>
+                                        <h6 class="fw-bold mb-3">Varian Produk</h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm align-middle">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Warna</th>
+                                                        <th>Stok</th>
+                                                        <th>Foto Utama</th>
+                                                        <th class="text-end">Aksi</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php foreach ($product['variants'] as $variant): ?>
+                                                        <tr>
+                                                            <td><?= htmlspecialchars($variant['color']) ?></td>
+                                                            <td><?= (int) $variant['stock'] ?> pcs</td>
+                                                            <td>
+                                                                <?php if (!empty($variant['primary_image'])): ?>
+                                                                    <img src="../assets/uploads/<?= htmlspecialchars($variant['primary_image']) ?>" style="width: 54px; height: 54px; object-fit: cover;" class="rounded border">
+                                                                <?php else: ?>
+                                                                    <span class="text-muted small">-</span>
+                                                                <?php endif; ?>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <button class="btn btn-sm btn-outline-primary fw-bold" data-bs-toggle="modal" data-bs-target="#editVariantModal<?= (int) $variant['id'] ?>">
+                                                                    <i class="fa fa-edit me-1"></i> Ubah
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                     <div class="modal-footer bg-light border-0">
                                         <button class="btn btn-warning fw-bold px-3 text-dark" data-bs-toggle="modal" data-bs-target="#editProductModal<?= $product['id'] ?>">
                                             <i class="fa fa-edit me-1"></i> Ubah Data
+                                        </button>
+                                        <button class="btn btn-success fw-bold px-3" data-bs-toggle="modal" data-bs-target="#addVariantModal<?= $product['id'] ?>">
+                                            <i class="fa fa-layer-group me-1"></i> Tambah Varian
                                         </button>
                                         <button class="btn btn-danger fw-bold px-3" onclick="deleteProduct(<?= $product['id'] ?>)">
                                             <i class="fa fa-trash-alt me-1"></i> Hapus
@@ -259,16 +300,8 @@ $csrfToken = csrfToken();
                                                     <label class="form-label small fw-bold">Harga (Rp)</label>
                                                     <input type="number" name="editPrice" class="form-control editPrice" value="<?= $product['price'] ?>" required>
                                                 </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <label class="form-label small fw-bold">Jumlah Stok</label>
-                                                    <input type="number" name="editStock" class="form-control editStock" value="<?= (int) $product['stock'] ?>" min="0" required>
-                                                </div>
                                             </div>
                                             <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <label class="form-label small fw-bold">Warna</label>
-                                                    <input type="text" name="editColor" class="form-control editColor" value="<?= htmlspecialchars($product['color']) ?>">
-                                                </div>
                                                 <div class="col-md-6 mb-3">
                                                     <label class="form-label small fw-bold">Ukuran</label>
                                                     <input type="text" name="editSize" class="form-control editSize" value="<?= htmlspecialchars($product['size']) ?>">
@@ -293,11 +326,6 @@ $csrfToken = csrfToken();
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div class="mb-3">
-                                                <label class="form-label small fw-bold">Gambar Produk</label>
-                                                <input type="file" name="editImage" class="form-control editImage">
-                                                <small class="text-muted mt-1 d-block">* Biarkan kosong jika tidak ingin memperbarui visual gambar.</small>
-                                            </div>
                                             <div class="d-flex justify-content-end gap-2 mt-4">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                                                 <button type="submit" class="btn text-white fw-bold" style="background-color: #ff74a4;">Simpan Perubahan</button>
@@ -307,6 +335,80 @@ $csrfToken = csrfToken();
                                 </div>
                             </div>
                         </div>
+
+                        <div class="modal fade" id="addVariantModal<?= $product['id'] ?>" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content border-0 shadow">
+                                    <div class="modal-header" style="background-color: #ff94c4; color: white;">
+                                        <h5 class="modal-title fw-bold"><i class="fa fa-layer-group me-2"></i>Tambah Varian Baru</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body p-4">
+                                        <form id="addVariantForm<?= $product['id'] ?>" data-product-id="<?= $product['id'] ?>">
+                                            <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
+                                            <div class="mb-3">
+                                                <label class="form-label small fw-bold">Warna Varian</label>
+                                                <input type="text" name="variantColor" class="form-control" placeholder="Pink, Soft Blue, Putih" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label small fw-bold">Stok Varian</label>
+                                                <input type="number" name="variantStock" class="form-control" min="0" value="0" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label small fw-bold">Gambar Utama</label>
+                                                <input type="file" name="variantPrimaryImage" class="form-control" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label small fw-bold">Foto Tambahan</label>
+                                                <input type="file" name="variantImages[]" class="form-control" multiple>
+                                            </div>
+                                            <div class="d-flex justify-content-end gap-2 mt-4">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                                <button type="submit" class="btn text-white fw-bold" style="background-color: #ff74a4;">Simpan Varian</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <?php foreach ($product['variants'] as $variant): ?>
+                            <div class="modal fade" id="editVariantModal<?= (int) $variant['id'] ?>" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content border-0 shadow">
+                                        <div class="modal-header" style="background-color: #ff94c4; color: white;">
+                                            <h5 class="modal-title fw-bold"><i class="fa fa-pen-to-square me-2"></i>Ubah Varian</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body p-4">
+                                            <form id="editVariantForm<?= (int) $variant['id'] ?>" data-variant-id="<?= (int) $variant['id'] ?>">
+                                                <input type="hidden" name="variant_id" value="<?= (int) $variant['id'] ?>">
+                                                <div class="mb-3">
+                                                    <label class="form-label small fw-bold">Warna Varian</label>
+                                                    <input type="text" name="variantColor" class="form-control" value="<?= htmlspecialchars($variant['color']) ?>" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label small fw-bold">Stok Varian</label>
+                                                    <input type="number" name="variantStock" class="form-control" min="0" value="<?= (int) $variant['stock'] ?>" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label small fw-bold">Gambar Utama Baru</label>
+                                                    <input type="file" name="variantPrimaryImage" class="form-control">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label small fw-bold">Foto Tambahan Baru</label>
+                                                    <input type="file" name="variantImages[]" class="form-control" multiple>
+                                                </div>
+                                                <div class="d-flex justify-content-end gap-2 mt-4">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                                    <button type="submit" class="btn text-white fw-bold" style="background-color: #ff74a4;">Simpan Perubahan</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
                 <?php endforeach; ?>
             </div>
         </div>
@@ -331,16 +433,6 @@ $csrfToken = csrfToken();
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label small fw-bold">Warna</label>
-                                <input type="text" class="form-control" id="productColor" placeholder="Pink, Soft Blue, Putih">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label small fw-bold">Ukuran</label>
-                                <input type="text" class="form-control" id="productSize" placeholder="20x20, Large, Medium">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
                                 <label class="form-label small fw-bold">Kategori</label>
                                 <select class="form-select" id="productCategory">
                                     <option value="">Pilih Kategori</option>
@@ -358,8 +450,8 @@ $csrfToken = csrfToken();
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label small fw-bold">Jumlah Stok Awal</label>
-                                <input type="number" class="form-control" id="productStock" min="0" value="0">
+                                <label class="form-label small fw-bold">Ukuran Produk</label>
+                                <input type="text" class="form-control" id="productSize" placeholder="20x20, Large, Medium">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label small fw-bold">Status Rilis</label>
@@ -369,9 +461,26 @@ $csrfToken = csrfToken();
                                 </select>
                             </div>
                         </div>
+                        <hr class="my-4">
+                        <h6 class="fw-bold mb-3">Varian Pertama</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small fw-bold">Warna</label>
+                                <input type="text" class="form-control" id="variantColor" placeholder="Pink, Soft Blue, Putih">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small fw-bold">Stok Varian</label>
+                                <input type="number" class="form-control" id="variantStock" min="0" value="0">
+                            </div>
+                        </div>
                         <div class="mb-3">
-                            <label class="form-label small fw-bold">Gambar Produk</label>
-                            <input type="file" class="form-control" id="productImage">
+                            <label class="form-label small fw-bold">Gambar Utama Varian</label>
+                            <input type="file" class="form-control" id="variantPrimaryImage">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Foto Tambahan Varian</label>
+                            <input type="file" class="form-control" id="variantImages" multiple>
+                            <small class="text-muted d-block mt-1">Boleh pilih lebih dari satu file.</small>
                         </div>
                         <div class="d-flex justify-content-end gap-2 mt-4">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -409,23 +518,47 @@ $csrfToken = csrfToken();
 
         function buildEditProductFormData(formElement) {
             var $form = $(formElement);
-            var fileInput = $form.find('.editImage')[0];
-            var fileToUpload = fileInput && fileInput.files.length > 0 ? fileInput.files[0] : null;
-
             var formData = new FormData();
+
             formData.append('action', 'editproduct');
             formData.append('id', $form.data('id'));
             formData.append('productName', $form.find('.editName').val());
             formData.append('productDesc', $form.find('.editAbout').val());
             formData.append('productPrice', $form.find('.editPrice').val());
-            formData.append('productStock', $form.find('.editStock').val());
-            formData.append('productColor', $form.find('.editColor').val());
             formData.append('productSize', $form.find('.editSize').val());
             formData.append('productCategory', $form.find('.editCategory').val());
             formData.append('productStatus', $form.find('.editStatus').val());
             formData.append('csrf_token', csrfToken);
 
-            if (fileToUpload) { formData.append('productImage', fileToUpload); }
+            return formData;
+        }
+
+        function buildAddProductFormData() {
+            var formData = new FormData();
+            var extraImages = document.getElementById('variantImages');
+
+            formData.append('action', 'addProduct');
+            formData.append('productName', $('#productName').val());
+            formData.append('productAbout', $('#productAbout').val());
+            formData.append('productSize', $('#productSize').val());
+            formData.append('productCategory', $('#productCategory').val());
+            formData.append('productPrice', $('#productPrice').val());
+            formData.append('productStatus', $('#productStatus').val());
+            formData.append('variantColor', $('#variantColor').val());
+            formData.append('variantStock', $('#variantStock').val());
+
+            var primaryImage = document.getElementById('variantPrimaryImage');
+            if (primaryImage && primaryImage.files.length > 0) {
+                formData.append('variantPrimaryImage', primaryImage.files[0]);
+            }
+
+            if (extraImages && extraImages.files.length > 0) {
+                for (var i = 0; i < extraImages.files.length; i++) {
+                    formData.append('variantImages[]', extraImages.files[i]);
+                }
+            }
+
+            formData.append('csrf_token', csrfToken);
             return formData;
         }
 
@@ -435,31 +568,20 @@ $csrfToken = csrfToken();
 
                 var productName = $('#productName').val();
                 var productAbout = $('#productAbout').val();
-                var productColor = $('#productColor').val();
                 var productSize = $('#productSize').val();
                 var productCategory = $('#productCategory').val();
                 var productPrice = $('#productPrice').val();
-                var productStock = $('#productStock').val();
                 var productStatus = $('#productStatus').val();
-                var productImage = $('#productImage')[0].files[0];
+                var variantColor = $('#variantColor').val();
+                var variantStock = $('#variantStock').val();
+                var productImage = $('#variantPrimaryImage')[0].files[0];
 
-                if (!productName || !productAbout || !productColor || !productSize || !productCategory || !productPrice || !productStock || !productStatus || !productImage) {
-                    showError('Semua kolom wajib diisi lengkap!');
+                if (!productName || !productAbout || !productSize || !productCategory || !productPrice || !productStatus || !variantColor || !variantStock || !productImage) {
+                    showError('Semua kolom produk dan varian utama wajib diisi lengkap!');
                     return;
                 }
 
-                var formData = new FormData();
-                formData.append('action', 'addProduct');
-                formData.append('productName', productName);
-                formData.append('productAbout', productAbout);
-                formData.append('productColor', productColor);
-                formData.append('productSize', productSize);
-                formData.append('productCategory', productCategory);
-                formData.append('productPrice', productPrice);
-                formData.append('productStock', productStock);
-                formData.append('productStatus', productStatus);
-                formData.append('productImage', productImage);
-                formData.append('csrf_token', csrfToken);
+                var formData = buildAddProductFormData();
 
                 $.ajax({
                     url: '../functions.php',
@@ -482,11 +604,10 @@ $csrfToken = csrfToken();
                 var productName = $(this).find('.editName').val();
                 var productDesc = $(this).find('.editAbout').val();
                 var productPrice = $(this).find('.editPrice').val();
-                var productStock = $(this).find('.editStock').val();
                 var productCategory = $(this).find('.editCategory').val();
                 var productStatus = $(this).find('.editStatus').val();
 
-                if (!productName || !productDesc || !productPrice || !productStock || !productCategory || !productStatus) {
+                if (!productName || !productDesc || !productPrice || !productCategory || !productStatus) {
                     showError('Semua kolom modifikasi wajib diisi!');
                     return;
                 }
@@ -508,6 +629,60 @@ $csrfToken = csrfToken();
                                 location.reload();
                             });
                         } else { showError(data ? data.message : 'Format respons tidak valid.'); }
+                    },
+                    error: function () { showError('Terjadi kesalahan sistem, silakan coba lagi.'); }
+                });
+            });
+
+            $(document).on('submit', "form[id^='addVariantForm']", function (e) {
+                e.preventDefault();
+
+                var formData = new FormData(this);
+                formData.append('action', 'addVariant');
+                formData.append('csrf_token', csrfToken);
+
+                $.ajax({
+                    url: '../functions.php',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        var data = parseJsonResponse(response);
+                        if (data && data.success) {
+                            Swal.fire({ icon: 'success', title: 'Berhasil', text: data.message, confirmButtonColor: '#ff94c4' }).then(function () {
+                                location.reload();
+                            });
+                        } else {
+                            showError(data ? data.message : 'Format respons tidak valid.');
+                        }
+                    },
+                    error: function () { showError('Terjadi kesalahan sistem, silakan coba lagi.'); }
+                });
+            });
+
+            $(document).on('submit', "form[id^='editVariantForm']", function (e) {
+                e.preventDefault();
+
+                var formData = new FormData(this);
+                formData.append('action', 'editVariant');
+                formData.append('csrf_token', csrfToken);
+
+                $.ajax({
+                    url: '../functions.php',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        var data = parseJsonResponse(response);
+                        if (data && data.success) {
+                            Swal.fire({ icon: 'success', title: 'Berhasil', text: data.message, confirmButtonColor: '#ff94c4' }).then(function () {
+                                location.reload();
+                            });
+                        } else {
+                            showError(data ? data.message : 'Format respons tidak valid.');
+                        }
                     },
                     error: function () { showError('Terjadi kesalahan sistem, silakan coba lagi.'); }
                 });
