@@ -287,7 +287,9 @@ $products = getProductLimit();
 
                                                         <?php else: ?>
 
-                                                            <img>
+                                                            <img src="assets/uploads/<?= htmlspecialchars($productMedia) ?>"
+                                                                class="modal-product-image"
+                                                                alt="<?= htmlspecialchars($product['name']) ?>">
 
                                                         <?php endif; ?>
 
@@ -522,6 +524,7 @@ $products = getProductLimit();
                     const toast = new bootstrap.Toast(toastElement, { delay: 4000 });
                     toast.show();
                 });
+
         }
 
         document.querySelectorAll('.modal').forEach(function (modal) {
