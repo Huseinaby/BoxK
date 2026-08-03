@@ -1285,44 +1285,41 @@ function getCartItems($userId = null)
     }
 
     $query = "SELECT
-                    carts.id AS cart_id,
-                    carts.quantity,
-                    product.id AS product_id,
-                    product.name,
-                    product.price,
-                    product.status,
-                    pv.id AS variant_id,
-                    pv.color,
-                    pv.stock,
-                    (
-                        SELECT pi.image
-                        FROM product_images pi
-                        WHERE pi.variant_id = pv.id
-                        ORDER BY pi.is_primary DESC, pi.id ASC
-                        LIMIT 1
-                    ) AS image
-              FROM carts
-              JOIN product ON carts.product_id = product.id
-              LEFT JOIN product_variants pv ON pv.id = COALESCE(
-                    carts.variant_id,
-                    (
-                        SELECT pv2.id
-                        FROM product_variants pv2
-                        WHERE pv2.product_id = product.id
-                        ORDER BY pv2.id ASC
-                        LIMIT 1
-                    )
-              )
-              WHERE carts.user_id = $userId
-              ORDER BY carts.created_at DESC";
+                carts.id AS cart_id,
+                carts.quantity,
 
-    $result = mysqli_query($conn, $query);
+                product.id AS product_id,
+                product.name,
+                product.price,
+                product.status,
+
+                pv.id AS variant_id,
+                pv.color,
+                pv.stock,
+                pv.image
+
+          FROM carts
+
+          JOIN product
+                ON carts.product_id = product.id
+
+          LEFT JOIN product_variants pv
+                ON pv.id = carts.variant_id
+
+          WHERE carts.user_id = ?
+
+          ORDER BY carts.created_at DESC";
+
+    $stmt = mysqli_prepare($conn, $query);
+    mysqli_stmt_bind_param($stmt, 'i', $userId);
+    mysqli_stmt_execute($stmt);
+
+    $result = mysqli_stmt_get_result($stmt);
+
     $items = [];
 
-    if ($result) {
-        while ($row = mysqli_fetch_assoc($result)) {
-            $items[] = $row;
-        }
+    while ($row = mysqli_fetch_assoc($result)) {
+        $items[] = $row;
     }
 
     return $items;
