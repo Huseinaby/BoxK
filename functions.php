@@ -1090,41 +1090,87 @@ function deleteProduct($id)
 
     $id = (int) $id;
 
-    $query = mysqli_prepare($conn, "
-        SELECT pi.image
-        FROM product_variants pv
-        LEFT JOIN product_images pi ON pi.variant_id = pv.id
-        WHERE pv.product_id = ?
-    ");
-    mysqli_stmt_bind_param($query, 'i', $id);
-    mysqli_stmt_execute($query);
-    $result = mysqli_stmt_get_result($query);
-    $images = [];
+    // Ambil media produk
+    $productQuery = mysqli_prepare(
+        $conn,
+        "SELECT media
+         FROM product
+         WHERE id = ?"
+    );
 
-    if ($result) {
-        while ($row = mysqli_fetch_assoc($result)) {
-            if (!empty($row['image'])) {
-                $images[] = $row['image'];
-            }
+    mysqli_stmt_bind_param($productQuery, 'i', $id);
+    mysqli_stmt_execute($productQuery);
+
+    $productResult = mysqli_stmt_get_result($productQuery);
+    $product = mysqli_fetch_assoc($productResult);
+
+    if (!$product) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Produk tidak ditemukan.'
+        ]);
+        exit;
+    }
+
+    // Ambil semua gambar varian
+    $variantQuery = mysqli_prepare(
+        $conn,
+        "SELECT image
+         FROM product_variants
+         WHERE product_id = ?"
+    );
+
+    mysqli_stmt_bind_param($variantQuery, 'i', $id);
+    mysqli_stmt_execute($variantQuery);
+
+    $variantResult = mysqli_stmt_get_result($variantQuery);
+
+    $variantImages = [];
+
+    while ($row = mysqli_fetch_assoc($variantResult)) {
+        if (!empty($row['image'])) {
+            $variantImages[] = $row['image'];
         }
     }
 
-    $query = mysqli_prepare($conn, "DELETE FROM product WHERE id = ?");
-    mysqli_stmt_bind_param($query, 'i', $id);
-    $result = mysqli_stmt_execute($query);
+    mysqli_begin_transaction($conn);
 
-    if ($result) {
-        foreach (array_unique($images) as $image) {
-            $imagePath = __DIR__ . '/assets/uploads/' . $image;
-            if (file_exists($imagePath)) {
-                unlink($imagePath);
-            }
-        }
+    $deleteQuery = mysqli_prepare(
+        $conn,
+        "DELETE FROM product
+         WHERE id = ?"
+    );
 
-        echo json_encode(['success' => true, 'message' => 'Produk berhasil dihapus.']);
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Gagal menghapus produk.']);
+    mysqli_stmt_bind_param($deleteQuery, 'i', $id);
+
+    if (!mysqli_stmt_execute($deleteQuery)) {
+
+        mysqli_rollback($conn);
+
+        echo json_encode([
+            'success' => false,
+            'message' => 'Gagal menghapus produk.'
+        ]);
+        exit;
     }
+
+    mysqli_commit($conn);
+
+    // Hapus media produk
+    if (!empty($product['media'])) {
+        @unlink(__DIR__ . '/assets/uploads/' . $product['media']);
+    }
+
+    // Hapus gambar semua varian
+    foreach (array_unique($variantImages) as $image) {
+        @unlink(__DIR__ . '/assets/uploads/' . $image);
+    }
+
+    echo json_encode([
+        'success' => true,
+        'message' => 'Produk berhasil dihapus.'
+    ]);
+    exit;
 }
 
 function addToCart()
