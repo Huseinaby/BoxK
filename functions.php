@@ -578,10 +578,6 @@ function addProduct()
 {
     global $conn;
 
-    mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-    ini_set('display_errors', 1);
-    error_reporting(E_ALL);
-
     $name = trim($_POST['productName'] ?? '');
     $about = trim($_POST['productAbout'] ?? '');
     $size = trim($_POST['productSize'] ?? '');
@@ -695,7 +691,11 @@ function addProduct()
 
         mysqli_rollback($conn);
 
-        die(mysqli_stmt_error($query));
+        echo json_encode([
+            'success' => false,
+            'message' => 'Gagal menyimpan produk.'
+        ]);
+        exit;
     }
 
     $productId = mysqli_insert_id($conn);
