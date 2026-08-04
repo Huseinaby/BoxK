@@ -32,10 +32,9 @@ if (isset($_POST['save_settings'])) {
     if (in_array($fileExt, ['jpg', 'jpeg', 'png'])) {
       $newQrisName = 'qris_' . time() . '.' . $fileExt;
       if (move_uploaded_file($fileTmp, '../assets/uploads/' . $newQrisName)) {
-        if (!empty($shop['qris_image']) && file_exists('../assets/uploads/' . $shop['qris_image'])) {
-          unlink('../assets/uploads/' . $shop['qris_image']);
-        }
-        $qris_image = $newQrisName;
+        echo "MOVE BERHASIL";
+      } else {
+        die("MOVE GAGAL");
       }
     } else {
       $swalScript = "Swal.fire({icon:'error', title:'Gagal!', text:'Format QRIS harus JPG/PNG', confirmButtonColor:'#ff94c4'});";
