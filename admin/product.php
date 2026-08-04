@@ -892,6 +892,40 @@ $csrfToken = csrfToken();
                 }
             });
         }
+
+        $("#addProductForm").submit(function (e) {
+            e.preventDefault();
+            // ... validasi yang sudah ada ...
+
+            var formData = buildAddProductFormData();
+            var $submitBtn = $(this).find('button[type="submit"]');
+            var originalText = $submitBtn.html();
+            $submitBtn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Mengunggah...');
+
+            $.ajax({
+                url: '../functions.php',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                timeout: 120000, // 2 menit, sesuaikan dengan max_execution_time hosting
+                success: function (response) {
+                    var data = parseJsonResponse(response);
+                    if (data && data.success) { showSuccessAndReload('Berhasil', data.message); }
+                    else { showError(data ? data.message : 'Format respons tidak valid.', 'Gagal'); }
+                },
+                error: function (xhr, status) {
+                    if (status === 'timeout') {
+                        showError('Upload memakan waktu terlalu lama. Coba gunakan file yang lebih kecil.');
+                    } else {
+                        showError('Terjadi kesalahan, silakan coba lagi.');
+                    }
+                },
+                complete: function () {
+                    $submitBtn.prop('disabled', false).html(originalText);
+                }
+            });
+        });
     </script>
 </body>
 
