@@ -1,6 +1,6 @@
 <?php
 
-$conn = mysqli_connect("localhost", "root", "", "boxkado");
+$conn = mysqli_connect("localhost", "boxkadom_db", "", "boxkado");
 
 function requireAdminAccess($respondAsJson = false)
 {
