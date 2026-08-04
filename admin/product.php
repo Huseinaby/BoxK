@@ -708,53 +708,6 @@ $csrfToken = csrfToken();
         }
 
         $(document).ready(function () {
-            $("#addProductForm").submit(function (e) {
-                e.preventDefault();
-
-                var productName = $('#productName').val();
-                var productAbout = $('#productAbout').val();
-                var productSize = $('#productSize').val();
-                var productCategory = $('#productCategory').val();
-                var productPrice = $('#productPrice').val();
-                var productStatus = $('#productStatus').val();
-                var variantColor = $('#variantColor').val();
-                var variantStock = $('#variantStock').val();
-                var productMedia = $('#productMedia')[0].files[0];
-                var variantImage = $('#variantImage')[0].files[0];
-
-                if (
-                    !productName ||
-                    !productAbout ||
-                    !productSize ||
-                    !productCategory ||
-                    !productPrice ||
-                    !productStatus ||
-                    !variantColor ||
-                    variantStock === '' ||
-                    !productMedia ||
-                    !variantImage
-                ) {
-                    showError('Semua kolom wajib diisi.');
-                    return;
-                }
-
-                var formData = buildAddProductFormData();
-
-                $.ajax({
-                    url: '../functions.php',
-                    type: 'POST',
-                    data: formData,
-                    contentType: false,
-                    processData: false,
-                    success: function (response) {
-                        var data = parseJsonResponse(response);
-                        if (data && data.success) { showSuccessAndReload('Berhasil', data.message); }
-                        else { showError(data ? data.message : 'Format respons tidak valid.', 'Gagal'); }
-                    },
-                    error: function () { showError('Terjadi kesalahan, silakan coba lagi.'); }
-                });
-            });
-
             $(document).on('submit', "form[id^='editProductForm']", function (e) {
                 e.preventDefault();
 
@@ -895,7 +848,33 @@ $csrfToken = csrfToken();
 
         $("#addProductForm").submit(function (e) {
             e.preventDefault();
-            // ... validasi yang sudah ada ...
+
+            var productName = $('#productName').val();
+            var productAbout = $('#productAbout').val();
+            var productSize = $('#productSize').val();
+            var productCategory = $('#productCategory').val();
+            var productPrice = $('#productPrice').val();
+            var productStatus = $('#productStatus').val();
+            var variantColor = $('#variantColor').val();
+            var variantStock = $('#variantStock').val();
+            var productMedia = $('#productMedia')[0].files[0];
+            var variantImage = $('#variantImage')[0].files[0];
+
+            if (
+                !productName ||
+                !productAbout ||
+                !productSize ||
+                !productCategory ||
+                !productPrice ||
+                !productStatus ||
+                !variantColor ||
+                variantStock === '' ||
+                !productMedia ||
+                !variantImage
+            ) {
+                showError('Semua kolom wajib diisi.');
+                return;
+            }
 
             var formData = buildAddProductFormData();
             var $submitBtn = $(this).find('button[type="submit"]');
