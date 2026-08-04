@@ -723,6 +723,12 @@ $csrfToken = csrfToken();
                 }
 
                 var formData = buildEditProductFormData(this);
+                var $submitBtn = $(this).find('button[type="submit"]');
+                var originalText = $submitBtn.html();
+
+                $submitBtn
+                    .prop('disabled', true)
+                    .html('<i class="fa fa-spinner fa-spin"></i> Menyimpan...');
                 var modalId = 'editProductModal' + $(this).data('id');
 
                 $.ajax({
@@ -741,6 +747,9 @@ $csrfToken = csrfToken();
                         } else { showError(data ? data.message : 'Format respons tidak valid.'); }
                     },
                     error: function () { showError('Terjadi kesalahan sistem, silakan coba lagi.'); }
+                    complete: function () {
+                        $submitBtn.prop('disabled', false).html(originalText);
+                    }
                 });
             });
 
@@ -751,6 +760,13 @@ $csrfToken = csrfToken();
                 formData.append('action', 'addVariant');
                 formData.append('csrf_token', csrfToken);
 
+                var $submitBtn = $(this).find('button[type="submit"]');
+                var originalText = $submitBtn.html();
+
+                $submitBtn
+                    .prop('disabled', true)
+                    .html('<i class="fa fa-spinner fa-spin"></i> Menyimpan...');
+
                 $.ajax({
                     url: '../functions.php',
                     type: 'POST',
@@ -768,6 +784,9 @@ $csrfToken = csrfToken();
                         }
                     },
                     error: function () { showError('Terjadi kesalahan sistem, silakan coba lagi.'); }
+                    complete: function () {
+                        $submitBtn.prop('disabled', false).html(originalText);
+                    }
                 });
             });
 
@@ -778,6 +797,13 @@ $csrfToken = csrfToken();
                 formData.append('action', 'editVariant');
                 formData.append('csrf_token', csrfToken);
 
+                var $submitBtn = $(this).find('button[type="submit"]');
+                var originalText = $submitBtn.html();
+
+                $submitBtn
+                    .prop('disabled', true)
+                    .html('<i class="fa fa-spinner fa-spin"></i> Menyimpan...');
+
                 $.ajax({
                     url: '../functions.php',
                     type: 'POST',
@@ -795,6 +821,10 @@ $csrfToken = csrfToken();
                         }
                     },
                     error: function () { showError('Terjadi kesalahan sistem, silakan coba lagi.'); }
+
+                    complete: function () {
+                        $submitBtn.prop('disabled', false).html(originalText);
+                    }
                 });
             });
         });
