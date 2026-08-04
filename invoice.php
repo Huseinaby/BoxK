@@ -157,6 +157,31 @@ if (!$shop) {
       background: #198754;
       color: #fff;
     }
+
+    .qris-zoomable {
+      cursor: zoom-in;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .qris-zoomable:hover {
+      transform: scale(1.03);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+    }
+
+    #qrisZoomModal .modal-content {
+      background: transparent;
+      border: none;
+    }
+
+    #qrisZoomModal .btn-close {
+      background-color: #fff;
+      opacity: 0.9;
+    }
+
+    #qrisZoomImage {
+      max-height: 85vh;
+      width: auto;
+    }
   </style>
 </head>
 
@@ -343,10 +368,12 @@ if (!$shop) {
                   <div class="text-center">
                     <?php if (!empty($shop['qris_image']) && file_exists('assets/uploads/' . $shop['qris_image'])): ?>
                       <img src="assets/uploads/<?= $shop['qris_image'] ?>" alt="QRIS Pembayaran"
-                        class="img-fluid rounded border p-2 bg-white" style="max-height: 180px; object-fit: contain;">
+                        class="img-fluid rounded border p-2 bg-white qris-zoomable"
+                        style="max-height: 180px; object-fit: contain;" onclick="openQrisZoom(this.src)">
                     <?php else: ?>
                       <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BoxKado-Payment"
-                        alt="QRIS Default" class="img-fluid rounded border p-2 bg-white" style="max-width: 150px;">
+                        alt="QRIS Default" class="img-fluid rounded border p-2 bg-white qris-zoomable"
+                        style="max-width: 150px;" onclick="openQrisZoom(this.src)">
                     <?php endif; ?>
                   </div>
                   <small class="text-muted text-center d-block mt-2" style="font-size: 11px;">Mendukung QRIS M-Banking &
@@ -517,6 +544,20 @@ if (!$shop) {
     </div>
   </div>
 
+  <!-- Modal Zoom Gambar QRIS -->
+  <div class="modal fade" id="qrisZoomModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body text-center pt-0">
+          <img id="qrisZoomImage" src="" alt="QRIS Pembayaran (Diperbesar)" class="rounded shadow">
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="assets/js/jquery.min.js"></script>
   <script src="assets/js/popper.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -601,6 +642,12 @@ if (!$shop) {
             alert('Terjadi kesalahan sistem saat membatalkan pesanan.');
           });
       });
+    }
+
+    function openQrisZoom(imageSrc) {
+      document.getElementById('qrisZoomImage').src = imageSrc;
+      const qrisModal = new bootstrap.Modal(document.getElementById('qrisZoomModal'));
+      qrisModal.show();
     }
 
     document.addEventListener("DOMContentLoaded", function () {
