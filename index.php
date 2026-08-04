@@ -235,10 +235,34 @@ $products = getProductLimit();
                         <div class="col-md-3 mb-3 product-card"
                             data-category="<?= htmlspecialchars($product['category']) ?>"
                             data-name="<?= strtolower(htmlspecialchars($product['name'])) ?>">
+                            <?php
+                            $productMedia = $product['media'] ?? '';
+
+                            $isVideo = false;
+
+                            if (!empty($productMedia)) {
+                                $ext = strtolower(pathinfo($productMedia, PATHINFO_EXTENSION));
+                                $isVideo = in_array($ext, ['mp4', 'webm']);
+                            }
+                            ?>
                             <div class="card h-100" style="cursor: pointer;" data-bs-toggle="modal"
                                 data-bs-target="#productModal<?= $product['id'] ?>">
-                                <img src="assets/uploads/<?= htmlspecialchars($product['image']) ?>" class="card-img-top"
-                                    alt="<?= htmlspecialchars($product['name']) ?>">
+                                <?php if ($isVideo): ?>
+
+                                    <video class="card-img-top" autoplay muted loop playsinline>
+
+                                        <source src="assets/uploads/<?= htmlspecialchars($productMedia) ?>">
+
+                                    </video>
+
+                                <?php else: ?>
+
+                                    <img src="<?= !empty($productMedia)
+                                        ? 'assets/uploads/' . htmlspecialchars($productMedia)
+                                        : 'assets/images/banner.png' ?>" class="card-img-top"
+                                        alt="<?= htmlspecialchars($product['name']) ?>">
+
+                                <?php endif; ?>
                                 <div class="card-body">
                                     <h5 class="card-title"><?= htmlspecialchars($product['name']) ?></h5>
                                     <p class="card-text" style="color: #ff74a4; font-weight: bold;">
@@ -261,11 +285,33 @@ $products = getProductLimit();
                                             aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <img src="assets/uploads/<?= htmlspecialchars($product['image']) ?>"
-                                            class="img-fluid mb-3" alt="<?= htmlspecialchars($product['name']) ?>">
+                                        <?php if ($isVideo): ?>
+
+                                            <video class="img-fluid mb-3" controls>
+
+                                                <source src="assets/uploads/<?= htmlspecialchars($productMedia) ?>">
+
+                                            </video>
+
+                                        <?php else: ?>
+
+                                            <img src="<?= !empty($productMedia)
+                                                ? 'assets/uploads/' . htmlspecialchars($productMedia)
+                                                : 'assets/images/banner.png' ?>" class="img-fluid mb-3"
+                                                alt="<?= htmlspecialchars($product['name']) ?>">
+
+                                        <?php endif; ?>
                                         <p><strong>Tentang Produk:</strong>
-                                            <?= nl2br(htmlspecialchars($product['about'])) ?></p>
-                                        <p><strong>Warna:</strong> <?= htmlspecialchars($product['color']) ?></p>
+                                            <?= nl2br(htmlspecialchars($product['about'])) ?>
+                                        </p>
+                                        <p>
+                                            <strong>Warna:</strong>
+
+                                                                                    <?php
+                                                                                    $colors = array_column($product['variants'], 'color');
+                                                                                    echo htmlspecialchars(implode(', ', $colors));
+                                                                                    ?>
+                                        </p>
                                         <p><strong>Ukuran:</strong> <?= htmlspecialchars($product['size']) ?></p>
                                         <p><strong>Kategori:</strong> <?= htmlspecialchars($product['category']) ?></p>
                                         <p><strong>Harga:</strong> Rp <?= number_format($product['price'], 0, ',', '.') ?>
