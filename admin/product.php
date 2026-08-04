@@ -746,7 +746,10 @@ $csrfToken = csrfToken();
                             });
                         } else { showError(data ? data.message : 'Format respons tidak valid.'); }
                     },
-                    error: function () { showError('Terjadi kesalahan sistem, silakan coba lagi.'); }
+                    error: function () {
+                        showError('Terjadi kesalahan sistem, silakan coba lagi.');
+
+                    },
                     complete: function () {
                         $submitBtn.prop('disabled', false).html(originalText);
                     }
@@ -783,7 +786,9 @@ $csrfToken = csrfToken();
                             showError(data ? data.message : 'Format respons tidak valid.');
                         }
                     },
-                    error: function () { showError('Terjadi kesalahan sistem, silakan coba lagi.'); }
+                    error: function () {
+                        showError('Terjadi kesalahan sistem, silakan coba lagi.');
+                    },
                     complete: function () {
                         $submitBtn.prop('disabled', false).html(originalText);
                     }
@@ -820,7 +825,10 @@ $csrfToken = csrfToken();
                             showError(data ? data.message : 'Format respons tidak valid.');
                         }
                     },
-                    error: function () { showError('Terjadi kesalahan sistem, silakan coba lagi.'); }
+                    error: function () {
+                        showError('Terjadi kesalahan sistem, silakan coba lagi.');
+
+                    },
 
                     complete: function () {
                         $submitBtn.prop('disabled', false).html(originalText);
