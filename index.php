@@ -307,10 +307,10 @@ $products = getProductLimit();
                                         <p>
                                             <strong>Warna:</strong>
 
-                                                                                    <?php
-                                                                                    $colors = array_column($product['variants'], 'color');
-                                                                                    echo htmlspecialchars(implode(', ', $colors));
-                                                                                    ?>
+                                            <?php
+                                            $colors = array_column($product['variants'], 'color');
+                                            echo htmlspecialchars(implode(', ', $colors));
+                                            ?>
                                         </p>
                                         <p><strong>Ukuran:</strong> <?= htmlspecialchars($product['size']) ?></p>
                                         <p><strong>Kategori:</strong> <?= htmlspecialchars($product['category']) ?></p>
