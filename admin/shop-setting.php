@@ -21,9 +21,6 @@ if (isset($_POST['save_settings'])) {
   $address = mysqli_real_escape_string($conn, $_POST['address']);
   $qris_image = $shop['qris_image'];
 
-  echo '<pre>';
-  print_r($_FILES);
-  echo '</pre>';
   if ($_FILES['qris_image']['error'] === 0) {
     $fileName = $_FILES['qris_image']['name'];
     $fileTmp = $_FILES['qris_image']['tmp_name'];
@@ -32,9 +29,10 @@ if (isset($_POST['save_settings'])) {
     if (in_array($fileExt, ['jpg', 'jpeg', 'png'])) {
       $newQrisName = 'qris_' . time() . '.' . $fileExt;
       if (move_uploaded_file($fileTmp, '../assets/uploads/' . $newQrisName)) {
-        echo "MOVE BERHASIL";
-      } else {
-        die("MOVE GAGAL");
+        if (!empty($shop['qris_image']) && file_exists('../assets/uploads/' . $shop['qris_image'])) {
+          unlink('../assets/uploads/' . $shop['qris_image']);
+        }
+        $qris_image = $newQrisName;
       }
     } else {
       $swalScript = "Swal.fire({icon:'error', title:'Gagal!', text:'Format QRIS harus JPG/PNG', confirmButtonColor:'#ff94c4'});";
@@ -42,8 +40,39 @@ if (isset($_POST['save_settings'])) {
   }
 
   if (empty($swalScript)) {
-    mysqli_query($conn, "UPDATE shop_identities SET shop_name='$shop_name', whatsapp='$whatsapp', address='$address', qris_image='$qris_image' WHERE id=1");
-    $swalScript = "Swal.fire({icon:'success', title:'Berhasil!', text:'Profil toko berhasil diperbarui!', confirmButtonColor:'#ff94c4'}).then(function(){window.location.href='shop-setting.php';});";
+
+    // Cek apakah data identitas toko sudah ada
+    $check = mysqli_query($conn, "SELECT id FROM shop_identities WHERE id = 1");
+
+    if (mysqli_num_rows($check) > 0) {
+      // Jika sudah ada, update
+      mysqli_query($conn, "
+            UPDATE shop_identities
+            SET
+                shop_name = '$shop_name',
+                whatsapp = '$whatsapp',
+                address = '$address',
+                qris_image = '$qris_image'
+            WHERE id = 1
+        ");
+    } else {
+      // Jika belum ada, insert data baru
+      mysqli_query($conn, "
+            INSERT INTO shop_identities
+            (id, shop_name, whatsapp, address, qris_image)
+            VALUES
+            (1, '$shop_name', '$whatsapp', '$address', '$qris_image')
+        ");
+    }
+
+    $swalScript = "Swal.fire({
+        icon:'success',
+        title:'Berhasil!',
+        text:'Profil toko berhasil diperbarui!',
+        confirmButtonColor:'#ff94c4'
+    }).then(function(){
+        window.location.href='shop-setting.php';
+    });";
   }
 }
 
