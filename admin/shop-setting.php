@@ -21,6 +21,9 @@ if (isset($_POST['save_settings'])) {
   $address = mysqli_real_escape_string($conn, $_POST['address']);
   $qris_image = $shop['qris_image'];
 
+  echo '<pre>';
+  print_r($_FILES);
+  echo '</pre>';
   if ($_FILES['qris_image']['error'] === 0) {
     $fileName = $_FILES['qris_image']['name'];
     $fileTmp = $_FILES['qris_image']['tmp_name'];
