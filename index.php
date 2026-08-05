@@ -117,10 +117,6 @@ $products = getProductLimit();
                                     <h1 class="banner_taital">BoxKado</h1>
                                     <p class="banner_text">Temukan berbagai pilihan kado unik dan istimewa untuk
                                         orang-orang tercinta. Jadikan momen spesial lebih bermakna dengan BoxKado.</p>
-                                    <div class="started_text">
-                                        <a href="https://wa.me/6287823885784" target="_blank" target="_blank">Pesan
-                                            Sekarang</a>
-                                    </div>
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="banner_img"><img style="width: 300px;" src="assets/images/banner.png">
@@ -134,10 +130,6 @@ $products = getProductLimit();
                                     <h1 class="banner_taital">BoxKado</h1>
                                     <p class="banner_text">Beragam koleksi kado kreatif dan personal siap melengkapi
                                         momen spesial Anda. Pilih dan pesan dengan mudah di BoxKado.</p>
-                                    <div class="started_text">
-                                        <a href="https://wa.me/6287823885784" target="_blank" target="_blank">Pesan
-                                            Sekarang</a>
-                                    </div>
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="banner_img"><img style="width: 300px;" src="assets/images/banner.png">
@@ -151,10 +143,6 @@ $products = getProductLimit();
                                     <h1 class="banner_taital">BoxKado</h1>
                                     <p class="banner_text">Butuh ide kado unik? Kami siap membantu! BoxKado menyediakan
                                         berbagai pilihan untuk semua acara spesial Anda.</p>
-                                    <div class="started_text">
-                                        <a href="https://wa.me/6287823885784" target="_blank" target="_blank">Pesan
-                                            Sekarang</a>
-                                    </div>
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="banner_img"><img style="width: 300px;" src="assets/images/banner.png">
@@ -168,10 +156,6 @@ $products = getProductLimit();
                                     <h1 class="banner_taital">BoxKado</h1>
                                     <p class="banner_text">Jadikan setiap hadiah lebih spesial dengan BoxKado. Kami
                                         hadir untuk membantu Anda memberikan yang terbaik.</p>
-                                    <div class="started_text">
-                                        <a href="https://wa.me/6287823885784" target="_blank" target="_blank">Pesan
-                                            Sekarang</a>
-                                    </div>
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="banner_img"><img style="width: 300px;" src="assets/images/banner.png">
