@@ -203,6 +203,18 @@ $ongkosKirimDefault = 10000;
                       konfirmasi.</small>
                   </label>
                 </div>
+
+                <div class="form-check p-3 border rounded mb-2" id="payCODContainer" style="display: none;">
+                  <input class="form-check-input ms-1" type="radio" name="payment_method" id="payCOD"
+                    value="bayar_ditempat">
+
+                  <label class="form-check-label ms-3 fw-bold" for="payCOD">
+                    Bayar di Tempat
+                    <small class="d-block text-muted fw-normal mt-1">
+                      Pembayaran dilakukan saat mengambil pesanan di toko.
+                    </small>
+                  </label>
+                </div>
               </div>
             </div>
 
@@ -290,6 +302,10 @@ $ongkosKirimDefault = 10000;
       const txtOngkir = document.getElementById('txtOngkir');
       const txtTotalBayar = document.getElementById('txtTotalBayar');
 
+      const payCODContainer = document.getElementById('payCODContainer');
+      const payCOD = document.getElementById('payCOD');
+      const payBank = document.getElementById('payBank');
+
       const inputs = [
         document.getElementById('inputNama'),
         document.getElementById('inputTelp'),
@@ -297,25 +313,35 @@ $ongkosKirimDefault = 10000;
       ];
 
       if (method === 'diantar') {
-        // 1. Munculkan kembali form alamat
+
+        // Tampilkan form alamat
         sectionAlamat.style.display = 'block';
 
-        // 2. Wajibkan kembali pengisian form (required)
+        // Sembunyikan COD
+        payCODContainer.style.display = 'none';
+
+        // Jika sebelumnya COD dipilih, kembali ke Transfer Bank
+        if (payCOD.checked) {
+          payBank.checked = true;
+        }
+
+        // Wajib isi alamat
         inputs.forEach(input => input.required = true);
 
-        // 3. Set Ongkir 10k & Hitung Total Baru
         let totalBayar = totalHargaBarang + 10000;
         txtOngkir.innerText = "Rp 10.000";
         txtTotalBayar.innerText = "Rp " + totalBayar.toLocaleString('id-ID');
-
       } else if (method === 'diambil') {
-        // 1. Sembunyikan form alamat
+
+        // Sembunyikan form alamat
         sectionAlamat.style.display = 'none';
 
-        // 2. Matikan required agar form bisa di-submit walau kosong
+        // Tampilkan COD
+        payCODContainer.style.display = 'block';
+
+        // Alamat tidak wajib diisi
         inputs.forEach(input => input.required = false);
 
-        // 3. Set Ongkir 0 & Hitung Total Baru
         txtOngkir.innerText = "-";
         txtTotalBayar.innerText = "Rp " + totalHargaBarang.toLocaleString('id-ID');
       }

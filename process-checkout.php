@@ -29,7 +29,40 @@ if (empty($carts)) {
 // 4. Tangkap dan Amankan Data Form Input
 $shipping_method = $_POST['shipping_method'] ?? 'diantar';
 $payment_method = $_POST['payment_method'] ?? 'transfer_bank';
+$catatan = mysqli_real_escape_string($conn, $_POST['catatan'] ?? '');// 4. Tangkap dan Amankan Data Form Input
+$shipping_method = $_POST['shipping_method'] ?? 'diantar';
+$payment_method = $_POST['payment_method'] ?? 'transfer_bank';
 $catatan = mysqli_real_escape_string($conn, $_POST['catatan'] ?? '');
+
+// Validasi nilai yang diperbolehkan
+$allowedShipping = ['diantar', 'diambil'];
+$allowedPayment = [
+  'transfer_bank',
+  'dompet_digital',
+  'bayar_ditempat'
+];
+
+if (!in_array($shipping_method, $allowedShipping, true)) {
+  $_SESSION['error'] = 'Metode pengiriman tidak valid.';
+  header('Location: checkout.php');
+  exit;
+}
+
+if (!in_array($payment_method, $allowedPayment, true)) {
+  $_SESSION['error'] = 'Metode pembayaran tidak valid.';
+  header('Location: checkout.php');
+  exit;
+}
+
+// Bayar di tempat hanya boleh untuk pengambilan
+if (
+  $shipping_method !== 'diambil' &&
+  $payment_method === 'bayar_ditempat'
+) {
+  $_SESSION['error'] = 'Bayar di tempat hanya tersedia untuk metode pengambilan.';
+  header('Location: checkout.php');
+  exit;
+}
 
 $nama_penerima = null;
 $telepon = null;

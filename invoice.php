@@ -223,7 +223,24 @@ if (!$shop) {
 
       <div class="row justify-content-center">
         <div class="col-lg-9">
-          <?php if ($order['status'] === 'pending' && empty($order['bukti_pembayaran'])): ?>
+          <?php if (
+            $order['payment_method'] === 'bayar_ditempat' &&
+            $order['status'] === 'pending'
+          ): ?>
+
+            <div class="alert alert-info text-center py-3 mb-4 border-0 shadow-sm">
+              <h4 class="fw-bold mb-1">
+                <i class="fa fa-store me-2"></i>
+                Menunggu Pengambilan
+              </h4>
+
+              <p class="mb-0 small text-muted">
+                Pesanan Anda berhasil dibuat.
+                Silakan datang ke toko untuk mengambil pesanan dan melakukan pembayaran di tempat.
+              </p>
+            </div>
+
+          <?php elseif ($order['status'] === 'pending' && empty($order['bukti_pembayaran'])): ?>
             <div class="alert alert-warning text-center py-3 mb-4 border-0 shadow-sm">
               <h4 class="fw-bold mb-1" style="color: #664d03;"><i class="fa fa-info-circle me-2"></i>Menunggu Pembayaran
               </h4>
@@ -304,83 +321,175 @@ if (!$shop) {
           <hr>
 
           <div class="row g-4 my-2">
+
+            <!-- Informasi Pengiriman -->
             <div class="col-md-6">
               <h6 class="fw-bold text-muted mb-2">Informasi Pengiriman:</h6>
+
               <p class="mb-1 fw-bold">
                 <?= ucfirst(htmlspecialchars($order['shipping_method'])) ?>
               </p>
+
               <?php if ($order['shipping_method'] === 'diantar'): ?>
-                <p class="mb-1 text-dark"><strong>Penerima:</strong>
-                  <?= htmlspecialchars($order['nama_penerima']) ?> (<?= htmlspecialchars($order['telepon']) ?>)
+
+                <p class="mb-1 text-dark">
+                  <strong>Penerima:</strong>
+                  <?= htmlspecialchars($order['nama_penerima']) ?>
+                  (<?= htmlspecialchars($order['telepon']) ?>)
                 </p>
+
                 <p class="mb-0 text-muted small">
                   <?= nl2br(htmlspecialchars($order['alamat_lengkap'])) ?>
                 </p>
+
               <?php else: ?>
-                <p class="mb-0 text-muted small">Silakan datang langsung ke toko offline
-                  <strong><?= htmlspecialchars($shop['shop_name']) ?></strong> untuk mengambil pesanan Anda.
+
+                <p class="mb-0 text-muted small">
+                  Silakan datang langsung ke toko offline
+                  <strong><?= htmlspecialchars($shop['shop_name']) ?></strong>
+                  untuk mengambil pesanan Anda.
                 </p>
+
                 <?php if (!empty($shop['address'])): ?>
-                  <small class="text-muted d-block mt-1"><i class="fa fa-location-dot me-1"></i> Lokasi:
-                    <?= htmlspecialchars($shop['address']) ?></small>
+                  <small class="text-muted d-block mt-1">
+                    <i class="fa fa-location-dot me-1"></i>
+                    Lokasi:
+                    <?= htmlspecialchars($shop['address']) ?>
+                  </small>
                 <?php endif; ?>
+
               <?php endif; ?>
 
               <?php if (!empty($order['catatan'])): ?>
                 <div class="mt-2 p-2 bg-light rounded border-start border-3 border-pink small">
-                  <strong>Catatan Kado:</strong> "<?= htmlspecialchars($order['catatan']) ?>"
+                  <strong>Catatan Kado:</strong>
+                  "<?= htmlspecialchars($order['catatan']) ?>"
                 </div>
               <?php endif; ?>
+
             </div>
 
+            <!-- Metode Pembayaran -->
             <div class="col-md-6 text-md-end">
-              <h6 class="fw-bold text-muted mb-2">Metode Pembayaran:</h6>
-              <p class="mb-1 fw-bold" style="color: #ff74a4;">
-                <?= $order['payment_method'] === 'transfer_bank' ? 'Transfer Bank (Manual)' : 'Dompet Digital (QRIS / E-Wallet)' ?>
+
+              <h6 class="fw-bold text-muted mb-2">
+                Metode Pembayaran:
+              </h6>
+
+              <p class="mb-1 fw-bold" style="color:#ff74a4;">
+                <?php
+                switch ($order['payment_method']) {
+
+                  case 'transfer_bank':
+                    echo 'Transfer Bank (Manual)';
+                    break;
+
+                  case 'dompet_digital':
+                    echo 'QRIS';
+                    break;
+
+                  case 'bayar_ditempat':
+                    echo 'Bayar di Tempat';
+                    break;
+                }
+                ?>
               </p>
 
               <div class="p-3 bg-light rounded text-start d-inline-block w-100 mt-2 border">
+
                 <?php if ($order['payment_method'] === 'transfer_bank'): ?>
-                  <small class="d-block fw-bold text-dark mb-2"><i class="fa fa-credit-card me-1 text-secondary"></i>
-                    Silakan transfer ke rekening resmi kami:</small>
+
+                  <small class="d-block fw-bold text-dark mb-2">
+                    <i class="fa fa-credit-card me-1 text-secondary"></i>
+                    Silakan transfer ke rekening resmi kami:
+                  </small>
+
                   <?php
                   $banks = getShopBanks();
+
                   if (mysqli_num_rows($banks) == 0):
                     ?>
-                    <span class="text-muted small d-block"><i>Belum ada rekening bank yang dikonfigurasi owner.</i></span>
+
+                    <span class="text-muted small d-block">
+                      <i>Belum ada rekening bank yang dikonfigurasi owner.</i>
+                    </span>
+
                     <?php
                   else:
+
                     while ($b = mysqli_fetch_assoc($banks)):
                       ?>
-                      <div class="mb-2 pb-2 border-bottom last-border-0">
-                        <span class="d-block small fw-bold text-primary">Bank <?= htmlspecialchars($b['bank_name']) ?>:
-                          <?= htmlspecialchars($b['account_number']) ?></span>
-                        <small class="text-muted d-block">a.n. <?= htmlspecialchars($b['account_name']) ?></small>
+
+                      <div class="mb-2 pb-2 border-bottom">
+                        <span class="d-block small fw-bold text-primary">
+                          Bank <?= htmlspecialchars($b['bank_name']) ?> :
+                          <?= htmlspecialchars($b['account_number']) ?>
+                        </span>
+
+                        <small class="text-muted d-block">
+                          a.n.
+                          <?= htmlspecialchars($b['account_name']) ?>
+                        </small>
                       </div>
+
                       <?php
                     endwhile;
+
                   endif;
                   ?>
-                <?php else: ?>
-                  <small class="d-block fw-bold text-dark mb-2 text-center"><i
-                      class="fa fa-qrcode me-1 text-secondary"></i> Silakan scan QRIS
-                    <?= htmlspecialchars($shop['shop_name']) ?>:</small>
+
+                <?php elseif ($order['payment_method'] === 'dompet_digital'): ?>
+
+                  <small class="d-block fw-bold text-dark mb-2 text-center">
+                    <i class="fa fa-qrcode me-1 text-secondary"></i>
+                    Silakan scan QRIS
+                    <?= htmlspecialchars($shop['shop_name']) ?>:
+                  </small>
+
                   <div class="text-center">
+
                     <?php if (!empty($shop['qris_image']) && file_exists('assets/uploads/' . $shop['qris_image'])): ?>
-                      <img src="assets/uploads/<?= $shop['qris_image'] ?>" alt="QRIS Pembayaran"
+
+                      <img src="assets/uploads/<?= $shop['qris_image'] ?>"
                         class="img-fluid rounded border p-2 bg-white qris-zoomable"
-                        style="max-height: 180px; object-fit: contain;" onclick="openQrisZoom(this.src)">
+                        style="max-height:180px;object-fit:contain;" onclick="openQrisZoom(this.src)">
+
                     <?php else: ?>
+
                       <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BoxKado-Payment"
-                        alt="QRIS Default" class="img-fluid rounded border p-2 bg-white qris-zoomable"
-                        style="max-width: 150px;" onclick="openQrisZoom(this.src)">
+                        class="img-fluid rounded border p-2 bg-white qris-zoomable" style="max-width:150px;"
+                        onclick="openQrisZoom(this.src)">
+
                     <?php endif; ?>
+
                   </div>
-                  <small class="text-muted text-center d-block mt-2" style="font-size: 11px;">Mendukung QRIS M-Banking &
-                    seluruh aplikasi E-Wallet lokal.</small>
+
+                  <small class="text-muted text-center d-block mt-2" style="font-size:11px;">
+                    Mendukung seluruh pembayaran QRIS.
+                  </small>
+
+                <?php else: ?>
+
+                  <div class="alert alert-success mb-0">
+
+                    <i class="fa fa-store me-2"></i>
+
+                    Pembayaran dilakukan saat mengambil pesanan di toko.
+
+                    <hr>
+
+                    <strong>Alamat Toko</strong><br>
+
+                    <?= htmlspecialchars($shop['address']) ?>
+
+                  </div>
+
                 <?php endif; ?>
+
               </div>
+
             </div>
+
           </div>
 
           <div class="table-responsive mt-4">
@@ -441,38 +550,81 @@ if (!$shop) {
           <hr class="mt-4">
 
           <div class="mt-4 p-4 rounded bg-light">
-            <?php if (empty($order['bukti_pembayaran'])): ?>
-              <h5 class="fw-bold text-dark mb-2"><i class="fa fa-upload me-2" style="color: #ff74a4;"></i>Upload Bukti
-                Pembayaran</h5>
-              <p class="text-muted small">Harap unggah foto atau tangkapan layar (screenshot) resi transfer/bukti bayar
-                yang sah (Format: JPG, JPEG, PNG, Maks 2MB).</p>
+
+            <?php if ($order['payment_method'] === 'bayar_ditempat'): ?>
+
+              <div class="alert alert-success mb-0">
+                <h5 class="fw-bold mb-2">
+                  <i class="fa fa-store me-2"></i>
+                  Pembayaran di Tempat
+                </h5>
+
+                <p class="mb-0">
+                  Anda tidak perlu mengunggah bukti pembayaran.
+                  Pembayaran dilakukan saat mengambil pesanan di toko.
+                </p>
+              </div>
+
+            <?php elseif (empty($order['bukti_pembayaran'])): ?>
+
+              <h5 class="fw-bold text-dark mb-2">
+                <i class="fa fa-upload me-2" style="color:#ff74a4;"></i>
+                Upload Bukti Pembayaran
+              </h5>
+
+              <p class="text-muted small">
+                Harap unggah foto atau tangkapan layar (screenshot) resi transfer/bukti bayar
+                yang sah (Format: JPG, JPEG, PNG, Maks 2MB).
+              </p>
 
               <form action="upload-payment.php" method="POST" enctype="multipart/form-data" class="mt-3 mb-0">
                 <input type="hidden" name="order_id" value="<?= $orderId ?>">
+
                 <div class="input-group">
                   <input type="file" name="bukti_bayar" class="form-control" accept="image/*" required>
-                  <button type="submit" class="btn text-white fw-bold px-4" style="background-color: #ff74a4;">
+
+                  <button type="submit" class="btn text-white fw-bold px-4" style="background-color:#ff74a4;">
                     Kirim Bukti
                   </button>
                 </div>
               </form>
+
             <?php else: ?>
+
               <div class="row align-items-center">
+
                 <div class="col-md-7 mb-3 mb-md-0">
-                  <h5 class="fw-bold text-success mb-1"><i class="fa fa-check-circle me-2"></i>Bukti Pembayaran Telah
-                    Dikirim</h5>
-                  <p class="text-muted small mb-0">Terima kasih! Bukti transfer Anda sudah terekam di sistem. Admin kami
-                    akan segera melakukan verifikasi data dan mengubah status pesanan Anda.</p>
+
+                  <h5 class="fw-bold text-success mb-1">
+                    <i class="fa fa-check-circle me-2"></i>
+                    Bukti Pembayaran Telah Dikirim
+                  </h5>
+
+                  <p class="text-muted small mb-0">
+                    Terima kasih! Bukti pembayaran Anda sudah diterima dan sedang menunggu verifikasi admin.
+                  </p>
+
                 </div>
+
                 <div class="col-md-5 text-md-end">
-                  <small class="d-block text-muted mb-1 font-weight-bold">Preview Bukti Anda:</small>
+
+                  <small class="d-block text-muted mb-1 fw-bold">
+                    Preview Bukti:
+                  </small>
+
                   <a href="assets/uploads/payments/<?= htmlspecialchars($order['bukti_pembayaran']) ?>" target="_blank">
+
                     <img src="assets/uploads/payments/<?= htmlspecialchars($order['bukti_pembayaran']) ?>"
-                      class="img-fluid rounded border shadow-sm" style="max-height: 100px; object-fit: cover;">
+                      class="img-fluid rounded border shadow-sm" style="max-height:100px;object-fit:cover;">
+
                   </a>
+
                 </div>
+
               </div>
+
             <?php endif; ?>
+
           </div>
 
           <div class="d-flex justify-content-between align-items-center mt-4">
@@ -482,7 +634,11 @@ if (!$shop) {
               </a>
             </div>
             <div>
-              <?php if ($order['status'] === 'pending' && empty($order['bukti_pembayaran'])): ?>
+              <?php if (
+                $order['status'] === 'pending' &&
+                $order['payment_method'] !== 'bayar_ditempat' &&
+                empty($order['bukti_pembayaran'])
+              ): ?>
                 <button type="button" class="btn btn-outline-danger fw-bold px-4" onclick="cancelOrder(<?= $orderId ?>)">
                   <i class="fa fa-times me-2"></i>Batalkan Pesanan Ini
                 </button>
