@@ -1,10 +1,18 @@
 <?php
 
+// $conn = mysqli_connect(
+//     "localhost",
+//     "root",
+//     "",
+//     "boxkado"
+// );
+
+
 $conn = mysqli_connect(
     "localhost",
-    "root",
-    "",
-    "boxkado"
+    "boxkadom_db",
+    "XUSAGxXwB4ULKCHeSGKf",
+    "boxkadom_db"
 );
 
 function requireAdminAccess($respondAsJson = false)
