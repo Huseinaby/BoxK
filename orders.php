@@ -171,9 +171,29 @@ $result = mysqli_stmt_get_result($query);
                     <td>
                       <?= date('d M Y, H:i', strtotime($row['created_at'])) ?>
                     </td>
-                    <td><small class="fw-bold">
+                    <td>
+                      <small class="d-block fw-bold">
                         <?= ucfirst(htmlspecialchars($row['shipping_method'])) ?>
-                      </small></td>
+                      </small>
+                      <small class="text-muted">
+                        <?php
+                        switch ($row['payment_method']) {
+
+                          case 'transfer_bank':
+                            echo 'Transfer Bank';
+                            break;
+
+                          case 'dompet_digital':
+                            echo 'QRIS';
+                            break;
+
+                          case 'bayar_ditempat':
+                            echo 'Bayar di Tempat';
+                            break;
+                        }
+                        ?>
+                      </small>
+                    </td>
                     <td class="fw-bold text-danger">Rp
                       <?= number_format($row['grand_total'], 0, ',', '.') ?>
                     </td>
@@ -182,21 +202,29 @@ $result = mysqli_stmt_get_result($query);
                         <?= ucfirst(htmlspecialchars($row['status'])) ?>
                       </span>
                     </td>
-                    <td class="text-center">
-                      <?php if (empty($row['bukti_pembayaran'])): ?>
-                        <span class="text-muted small"><i>Belum Upload</i></span>
+                    <<td class="text-center">
+                      <?php if ($row['payment_method'] === 'bayar_ditempat'): ?>
+                        <span class="badge bg-info">
+                          Bayar di Tempat
+                        </span>
+                      <?php elseif (empty($row['bukti_pembayaran'])): ?>
+                        <span class="text-muted small">
+                          <i>Belum Upload</i>
+                        </span>
                       <?php else: ?>
-                        <span class="text-success small fw-bold"><i class="fa fa-check shadow-none"></i> Sudah
-                          di-upload</span>
+                        <span class="text-success small fw-bold">
+                          <i class="fa fa-check"></i>
+                          Sudah di-upload
+                        </span>
                       <?php endif; ?>
-                    </td>
-                    <td class="text-center">
-                      <!-- Tombol dinamis mengarah ke invoice masing-masing -->
-                      <a href="invoice.php?id=<?= $row['id'] ?>" class="btn btn-sm text-white px-3 fw-bold"
-                        style="background-color: #ff74a4;">
-                        <i class="fa fa-eye me-1"></i> Detail
-                      </a>
-                    </td>
+                      </td>
+                      <td class="text-center">
+                        <!-- Tombol dinamis mengarah ke invoice masing-masing -->
+                        <a href="invoice.php?id=<?= $row['id'] ?>" class="btn btn-sm text-white px-3 fw-bold"
+                          style="background-color: #ff74a4;">
+                          <i class="fa fa-eye me-1"></i> Detail
+                        </a>
+                      </td>
                   </tr>
                 <?php endwhile; ?>
               </tbody>
