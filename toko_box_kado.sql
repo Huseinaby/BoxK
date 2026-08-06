@@ -280,7 +280,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `password`, `role`) VALUES
-(1, 'husein', '$2y$10$0qcDQSCfzfzUYVhWSZi8k.ZOCWxtEY3ZWPP36UjFP7Fnb9jNzyIIW', 'owner'),
+(1, 'owner', '$2y$10$0qcDQSCfzfzUYVhWSZi8k.ZOCWxtEY3ZWPP36UjFP7Fnb9jNzyIIW', 'owner'),
 (3, 'admin', '$2y$10$.TGYUah2hOL2/TZiXIj6DeA3idYlZAVguT8t1czZv3eQMvJy6NjYi', 'admin'),
 (4, 'abu', '$2y$10$qsRNFABIvSgGmUHBgBXW1.Tbp6P.pIoSkkrfGuSD/v/v30jboCj7a', 'pelanggan');
 
