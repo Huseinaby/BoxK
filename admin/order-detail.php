@@ -26,6 +26,7 @@ $queryOrder = mysqli_query($conn, "
     WHERE o.id = $orderId
 ");
 $order = mysqli_fetch_assoc($queryOrder);
+$shop = getShopIdentity();
 
 if (!$order) {
   header('Location: orders.php');
@@ -245,6 +246,37 @@ $queryDetails = mysqli_query($conn, "
                 <td class="text-muted">Metode Penyerahan</td>
                 <td>: <span class="badge bg-secondary px-2 py-1"><?= ucfirst($order['shipping_method']) ?></span></td>
               </tr>
+              <?php
+              $paymentBadge = 'primary';
+              $paymentText = '';
+
+              switch ($order['payment_method']) {
+
+                case 'transfer_bank':
+                  $paymentBadge = 'primary';
+                  $paymentText = 'Transfer Bank';
+                  break;
+
+                case 'dompet_digital':
+                  $paymentBadge = 'success';
+                  $paymentText = 'QRIS';
+                  break;
+
+                case 'bayar_ditempat':
+                  $paymentBadge = 'warning text-dark';
+                  $paymentText = 'Bayar di Tempat';
+                  break;
+              }
+              ?>
+
+              <tr>
+                <td class="text-muted">Metode Pembayaran</td>
+                <td>:
+                  <span class="badge bg-<?= $paymentBadge ?> px-2 py-1">
+                    <?= $paymentText ?>
+                  </span>
+                </td>
+              </tr>
               <?php if ($order['shipping_method'] === 'diantar'): ?>
                 <tr>
                   <td class="text-muted">Nama Penerima</td>
@@ -260,7 +292,17 @@ $queryDetails = mysqli_query($conn, "
                   <td class="text-muted">Alamat Pengiriman</td>
                   <td class="text-dark">: <?= nl2br(htmlspecialchars($order['alamat_lengkap'])) ?></td>
                 </tr>
+              <?php else: ?>
+
+                <tr>
+                  <td class="text-muted">Lokasi Pengambilan</td>
+                  <td>
+                    :
+                    <?= nl2br(htmlspecialchars($shop['address'])) ?>
+                  </td>
+                </tr>
               <?php endif; ?>
+
               <tr>
                 <td class="text-muted">Catatan Kado</td>
                 <td>: <span class="text-muted">"<?= htmlspecialchars($order['catatan']) ?: '-' ?>"</span></td>
@@ -344,6 +386,16 @@ $queryDetails = mysqli_query($conn, "
               <span
                 class="badge fs-6 px-3 py-2 rounded-pill bg-<?= $badgeColor ?>"><?= ucfirst($order['status']) ?></span>
             </div>
+            <?php if ($order['payment_method'] === 'bayar_ditempat' && $order['status'] !== 'selesai'): ?>
+
+              <div class="alert alert-warning mt-3 mb-0 py-2 small">
+                <i class="fa fa-money-bill-wave me-1"></i>
+
+                Pastikan pembayaran telah diterima saat pesanan diambil.
+
+              </div>
+
+            <?php endif; ?>
 
             <form method="POST">
               <div class="mb-3">
@@ -403,7 +455,14 @@ $queryDetails = mysqli_query($conn, "
 
           <div class="card border-0 shadow-sm p-4 text-center bg-white">
             <h5 class="fw-bold mb-3 text-secondary text-start"><i class="fa fa-image me-2"></i>Bukti Pembayaran</h5>
-            <?php if (empty($order['bukti_pembayaran'])): ?>
+            <?php if ($order['payment_method'] === 'bayar_ditempat'): ?>
+              <div class="alert alert-info py-4 mb-0 border-0">
+                <i class="fa fa-store fa-2x mb-2 d-block"></i>
+                <strong>Pembayaran dilakukan saat pengambilan.</strong>
+                <br>
+                Tidak diperlukan bukti transfer.
+              </div>
+            <?php elseif (empty($order['bukti_pembayaran'])): ?>
               <div class="alert alert-warning py-4 mb-0 border-0 shadow-inner">
                 <i class="fa fa-triangle-exclamation fa-2x mb-2 d-block text-warning"></i>
                 <span class="small fw-bold">Pembeli belum mengunggah bukti transfer resi.</span>
